@@ -3,6 +3,8 @@ import os
 from dotenv import load_dotenv
 from aiogram import Bot, Dispatcher
 from bot.handlers import start, show_c, conv
+from flask import Flask
+import threading
 
 load_dotenv()
 BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
@@ -16,8 +18,27 @@ dp.include_router(show_c.router)
 dp.include_router(conv.router)
 
 
-async def main():
+# async def main():
+#     await dp.start_polling(bot)
+
+# if __name__ == "__main__":
+#     asyncio.run(main())
+
+async def start_bot():
     await dp.start_polling(bot)
 
+app = Flask(__name__)
+
+@app.route("/health")
+def health_check():
+    return "OK", 200
+
+def run_http_server():
+    port = int(os.environ.get("PORT", 10000))
+    app.run(host="0.0.0.0", port=port)
+
 if __name__ == "__main__":
-    asyncio.run(main())
+    http_thread = threading.Thread(target=run_http_server, daemon=True)
+    http_thread.start()
+
+    asyncio.run(start_bot())
