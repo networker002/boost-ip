@@ -2,7 +2,7 @@ import asyncio
 import os
 from dotenv import load_dotenv
 from aiogram import Bot, Dispatcher
-from bot.handlers import start, show_c, conv
+from bot.handlers import start, show_c, conv, schedule, set_group
 from flask import Flask
 import threading
 
@@ -16,6 +16,8 @@ dp = Dispatcher()
 dp.include_router(start.router)
 dp.include_router(show_c.router)
 dp.include_router(conv.router)
+dp.include_router(set_group.router)
+dp.include_router(schedule.router)
 
 
 # async def main():

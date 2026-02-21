@@ -40,3 +40,17 @@ def main_conversion_kb() -> InlineKeyboardMarkup:
         [InlineKeyboardButton(text="Конвертировать текст", callback_data="convert_text")]
     ]
     return InlineKeyboardMarkup(inline_keyboard=buttons)
+
+def yes_no_group_want_kb() -> InlineKeyboardMarkup:
+    buttons = [
+        [InlineKeyboardButton(text='Да', callback_data="want_add_group")],
+        [InlineKeyboardButton(text="Нет", callback_data="dont_want_add_group")]
+    ]
+    return InlineKeyboardMarkup(inline_keyboard=buttons)
+
+def watch_schedule_edit_group_kb() -> InlineKeyboardMarkup:
+    buttons = [
+        [InlineKeyboardButton(text="Смотреть расписание", callback_data="watch_schedule_btn")], 
+        [InlineKeyboardButton(text="Изменить группу", callback_data="edit_group_btn")]
+    ] 
+    return InlineKeyboardMarkup(inline_keyboard=buttons)
