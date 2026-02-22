@@ -34,7 +34,7 @@ router = Router()
 
 @router.message(Command("group"))
 async def check_group(message: types.Message):
-    check_data = check_user_group(message.from_user.id)
+    check_data = await check_user_group(message.from_user.id)
 
     if check_data:
         keyboard_schedule = keyboards.watch_schedule_edit_group_kb()
@@ -79,7 +79,7 @@ async def set_group(message: types.Message, state: FSMContext):
         await message.answer(msg)
         return
     
-    if set_user_group(message.from_user.id, group_name):
+    if await set_user_group(message.from_user.id, group_name):
         await state.clear()
         await message.answer("Группа успешно установлена!")
     else:
@@ -96,7 +96,7 @@ async def dont_notice_cr_group(callback: types.CallbackQuery, state: FSMContext)
 
 @router.callback_query(F.data == "edit_group_btn")
 async def watch_schedule_edit_by_btn(callback: types.CallbackQuery, state: FSMContext):
-    if check_user_group(tg_id=int(callback.from_user.id)) is not None:
+    if await check_user_group(tg_id=int(callback.from_user.id)) is not None:
         await callback.message.edit_text("Введите новую группу: ")
         await state.set_state(EditingGroup.waiting_new_group)
         await callback.answer()
@@ -117,14 +117,14 @@ async def edit_schedule(message: types.Message, state: FSMContext):
             return 
         
         elif validate_group_response == (True, new_group):
-            if set_user_group(tg_id=message.from_user.id, group_name=new_group):
+            if await set_user_group(tg_id=message.from_user.id, group_name=new_group):
                 await state.clear()
                 await message.answer(f"Успешно! Новая группа - <b>{message.text.strip()}</b>", parse_mode="HTML")
             else: await message.answer("Группа не установлена. Обратитесь в поддержку")
             
     except Exception as e: 
         try:
-            if check_user_group(message.from_user.id)["group_name"] == message.text.upper():
+            if await check_user_group(message.from_user.id) is not None and await check_user_group(message.from_user.id)["group_name"] == message.text.upper():
                 await message.answer(f"Вы уже зарегестрированы под этой группой ({message.text.upper()})")
         except:
             await message.answer(f"Ошибка {e} уже чиним!")

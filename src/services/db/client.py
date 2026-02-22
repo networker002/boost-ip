@@ -1,7 +1,6 @@
 from supabase import create_client, Client
 import os
 from dotenv import load_dotenv
-import psycopg2
 
 load_dotenv()
 

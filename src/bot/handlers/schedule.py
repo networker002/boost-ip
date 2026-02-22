@@ -27,7 +27,7 @@ async def _get_schedule_logic(message: types.Message, user_id: int):
     
     sent_message = await message.answer(r_choice(["Загружаю расписаие. Ожидайте...", "Расписание отправляется", "Получаем расписание...", "Секунду", "Почти готово"]))
 
-    res = check_user_group(user_id)
+    res = await check_user_group(user_id)
     if res is None:
         await sent_message.edit_text("Сначала вы должны зарагестрировать свою группу.\nИспользуйте команду /group")
     else: 
