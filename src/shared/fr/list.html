@@ -22,11 +22,13 @@
             text-align: center;
             min-height: 100vh;
             font-weight: 600;
+            --el-grid: 1 / -1;
+            --el-width-grid: 50%;
         }
 
         p {
             font-size: large;
-
+            padding-top: .5em;
         }
 
         ol {
@@ -35,15 +37,46 @@
             text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.85);
             padding: 1em;
             list-style: none;
+            display: grid;
+            grid-template-columns: repeat(2, 50%);
+            
+            width: fit-content;
+            margin: auto;
+            li {
+                padding: .25em .5em;
+                margin: 6px;
+                background: rgba(109, 107, 107, 0.5);
+                border-radius: 12px;
+                box-shadow: 4px 4px 8px rgba(0, 0, 0, 0.55);
+                text-align: center;
+                cursor: pointer;
+
+                &:last-child {
+                    justify-self: center;
+                    grid-column: var(--el-grid);
+                    width: var(--el-width-grid);
+                }
+            }
+            
         }
     </style>
     <p>Все команды бота и за что они отвечают</p>
-    <ol>
+    <ol id="list-commands">
         <li>/start</li>
         <li>/commands</li>
         <li>/schedule</li>
         <li>/group</li>
         <li>/convert</li>
     </ol>
+<script>
+    var el = document.getElementById("list-commands");
+    if (el.childElementCount % 2 !== 0){
+        document.body.style.setProperty("--el-grid", "1/ -1");
+        document.body.style.setProperty("--el-width-grid", "50%");
+    } else {
+        document.body.style.setProperty("--el-grid", "auto");
+        document.body.style.setProperty("--el-width-grid", 'calc(50% + 13px + 1em)');
+    }
+</script>
 </body>
 </html>
