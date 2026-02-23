@@ -13,19 +13,22 @@ class Converter:
         pdf.add_page()
 
         try:
-            pdf.add_font('DejaVu', '', 'DejaVuSans.ttf', uni=True)
+            pdf.add_font('DejaVu', '', 'src/services/DejaVu Sans/DejaVuSans-Oblique.ttf', uni=True)
             pdf.set_font('DejaVu', size=12)
-        except:
+        except Exception as e:
+            print("font err", e)
             pdf.set_font('Arial', size=12)
 
         for line in text.split('\n'):
-            pdf.cell(0, 10, line, ln=True)
+            pdf.cell(0, 10, str(line), ln=True)
 
         pdf_bytes = io.BytesIO()
         pdf_bytes.write(pdf.output(dest='S').encode('latin1'))
         pdf_bytes.seek(0)
+        
         return pdf_bytes
     
+
     @staticmethod
     def text_to_docx(text: str, filename: str = "output.docx") -> io.BytesIO:
         doc = Document()

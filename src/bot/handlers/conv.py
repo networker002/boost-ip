@@ -6,13 +6,44 @@ from aiogram.fsm.state import State, StatesGroup
 from aiogram.fsm.context import FSMContext
 from aiogram import F
 import io
+from aiogram.types import Message
+from aiogram.filters import BaseFilter
+from services import html_do
+
 router = Router()
+
+class ReplyFromBot(BaseFilter):
+    key = "reply_to_bot"
+    async def __call__(self, message: Message, bot: Bot) -> bool:
+        if not message.reply_to_message:
+            return False
+        return message.reply_to_message.from_user.id == bot.id
+    
 
 class OrderConvert(StatesGroup):
     choosing_category = State()
     image_state = State()
     text_input_state = State()
     text_format_state = State()
+
+
+
+@router.message(Command("convert"), ReplyFromBot())
+async def test(message: Message):
+    answered_msg = message.reply_to_message.text
+
+    if answered_msg.startswith("Вот твое расписание"):
+        res = html_do.HTMLdocument().generate_html(answered_msg)
+        path = io.BytesIO()
+        path.write(res.encode("utf-8"))
+        path.seek(0)
+        await message.answer_document(
+            document=types.BufferedInputFile(
+                path.getvalue(),
+                filename="schedule.html"
+            ),
+            caption="Расписание"
+        )
 
 @router.message(Command("convert"))
 async def reg_conv(message: types.Message, state: FSMContext):
@@ -130,6 +161,9 @@ async def convert_text_format(callback: types.CallbackQuery, state: FSMContext):
 
     data = await state.get_data()
     text = data.get("input_text")
+
+    if text.startwith("Вот твое расписание"):
+        await callback.message.answer("Похоже, вы собираетесь конвертировать расписание. ")
 
     format_map = {
         "convert_to_pdf": ("PDF", "pdf"),

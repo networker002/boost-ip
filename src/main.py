@@ -31,18 +31,18 @@ async def start_bot():
     dp.update.outer_middleware(AntiFloodMiddleware(default_rate=1.5))
     await dp.start_polling(bot)
 
-app = Flask(__name__)
+# app = Flask(__name__)
 
-@app.route("/health")
-def health_check():
-    return "OK", 200
+# @app.route("/health")
+# def health_check():
+#     return "OK", 200
 
-def run_http_server():
-    port = int(os.environ.get("PORT", 10000))
-    app.run(host="0.0.0.0", port=port)
+# def run_http_server():
+#     port = int(os.environ.get("PORT", 10000))
+#     app.run(host="0.0.0.0", port=port)
 
 if __name__ == "__main__":
-    http_thread = threading.Thread(target=run_http_server, daemon=True)
-    http_thread.start()
-
+    # http_thread = threading.Thread(target=run_http_server, daemon=True)
+    # http_thread.start()
+    
     asyncio.run(start_bot())
