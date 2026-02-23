@@ -36,7 +36,7 @@ router = Router()
 async def check_group(message: types.Message):
     check_data = await check_user_group(message.from_user.id)
 
-    if check_data:
+    if check_data["group_name"].upper() not in ["NULL", ""]:
         keyboard_schedule = keyboards.watch_schedule_edit_group_kb()
         await message.answer(f"Ваша группа - <b>{check_data["group_name"]}</b>", parse_mode="HTML", reply_markup=keyboard_schedule)
     
@@ -107,25 +107,19 @@ async def watch_schedule_edit_by_btn(callback: types.CallbackQuery, state: FSMCo
 
 @router.message(F.text, EditingGroup.waiting_new_group)
 async def edit_schedule(message: types.Message, state: FSMContext):
-    try:
-        new_group = message.text.strip()
-        validate_group_response = validate_group.val_gr_n(group_name=new_group)
+    new_group = message.text.strip()
 
+    is_valid, msg = validate_group.val_gr_n(new_group)
+    if not is_valid:
+        await message.answer(msg)
+        return
 
-        if validate_group_response[0] == False:
-            await message.answer(validate_group_response[1])
-            return 
-        
-        elif validate_group_response == (True, new_group):
-            if await set_user_group(tg_id=message.from_user.id, group_name=new_group):
-                await state.clear()
-                await message.answer(f"Успешно! Новая группа - <b>{message.text.strip()}</b>", parse_mode="HTML")
-            else: await message.answer("Группа не установлена. Обратитесь в поддержку")
-            
-    except Exception as e: 
-        try:
-            if await check_user_group(message.from_user.id) is not None and await check_user_group(message.from_user.id)["group_name"] == message.text.upper():
-                await message.answer(f"Вы уже зарегестрированы под этой группой ({message.text.upper()})")
-        except:
-            await message.answer(f"Ошибка {e} уже чиним!")
-            print(e)
+    if await set_user_group(tg_id=message.from_user.id, group_name=new_group):
+        await state.clear()
+        await message.answer(
+            f"Успешно! Новая группа - <b>{new_group}</b>",
+            parse_mode="HTML",
+            reply_markup=keyboards.watch_schedule_edit_group_kb()
+        )
+    else:
+        await message.answer("Ошибка сохранения. Попробуйте позже.")

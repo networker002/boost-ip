@@ -5,6 +5,7 @@ from aiogram.filters import Command
 from bot.conf import config_tg
 from utils import keyboards
 import random
+from services.db.user_group import auto_add
 
 router = Router()
 
@@ -41,15 +42,16 @@ async def cmd_start(message: types.Message):
         parse_mode="HTML"
     )
 
+    await auto_add(message.from_user.id)
+
 
 @router.callback_query(lambda c: c.data == "go_back_commands")
 async def back_to_start(callback: types.CallbackQuery):
 
     kb = keyboards.get_commands_kb()
-    await callback.message.delete()
     
     welcome_text = f"Привет, {callback.from_user.first_name.capitalize()}! Я <b>BoostBot</b> 🚀\nНажми на кнопку ниже, чтобы увидеть что я могу"
-    await callback.message.answer(
+    await callback.message.edit_text(
         welcome_text,
         reply_markup=kb,
         parse_mode="HTML"

@@ -6,7 +6,6 @@ from aiogram.fsm.state import State, StatesGroup
 from aiogram.fsm.context import FSMContext
 from aiogram import F
 import io
-
 router = Router()
 
 class OrderConvert(StatesGroup):

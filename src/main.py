@@ -2,7 +2,8 @@ import asyncio
 import os
 from dotenv import load_dotenv
 from aiogram import Bot, Dispatcher
-from bot.handlers import start, show_c, conv, schedule, set_group
+from bot.handlers import start, show_c, conv, schedule, set_group, profile
+from utils.anti_flood import AntiFloodMiddleware
 from flask import Flask
 import threading
 
@@ -18,7 +19,7 @@ dp.include_router(show_c.router)
 dp.include_router(conv.router)
 dp.include_router(set_group.router)
 dp.include_router(schedule.router)
-
+dp.include_router(profile.router)   
 
 # async def main():
 #     await dp.start_polling(bot)
@@ -27,6 +28,7 @@ dp.include_router(schedule.router)
 #     asyncio.run(main())
 
 async def start_bot():
+    dp.update.outer_middleware(AntiFloodMiddleware(default_rate=1.5))
     await dp.start_polling(bot)
 
 app = Flask(__name__)

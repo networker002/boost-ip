@@ -1,7 +1,8 @@
 import json
 import requests as req
 from collections import defaultdict
-from typing import Dict, List, Any, TypedDict, Optional
+from typing import Dict, List, Any, TypedDict, Optional, Tuple
+from services import get_weeks
 
 class Lesson(TypedDict):
     time: str
@@ -53,7 +54,7 @@ class Schedule():
         return []   
 
 
-    def run_(self) -> Dict[int, Dict[int, List[Dict[str, Any]]]]:
+    def run_(self) -> Tuple[str, Dict] | Any:
 
         timings = self.set_Time()
         subjects = self.parse_by_group()
@@ -113,4 +114,4 @@ class Schedule():
 
         #result[week_day][[day_name]|[data[0|1|2|3]]]
 
-        return result
+        return get_weeks.group_now_week(result)

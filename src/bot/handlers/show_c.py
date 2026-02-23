@@ -9,18 +9,27 @@ router = Router()
 
 @router.message(Command("commands"))
 async def cmd_show_commands(message: types.Message):
-    await message.answer_document( 
-        caption=f"Вот список моих комманд, <b>который только пополняется!</b>\n- {"\n- ".join(get())}",
-        document=types.FSInputFile(path="src/shared/fr/list.html"), 
+    # await message.answer_document( 
+    #     caption=f"Вот список моих комманд, <b>который только пополняется!</b>\n- {"\n- ".join(get())}",
+    #     document=types.FSInputFile(path="src/shared/fr/list.html"), 
+    #     parse_mode="HTML"
+    # )
+    await message.answer(
+        text=f'<a href="https://telegra.ph/BoostBot--Commands-02-22">BoostBot | Commands</a>\nВот список команд, <b>который только пополняется!</b>\n- {"\n- ".join(get())}',
         parse_mode="HTML"
     )
 
 
 @router.callback_query(lambda c: c.data == "show_commands")
 async def on_show_commands(callback: types.CallbackQuery):
-    await callback.message.answer_document(
-        document=types.FSInputFile(path="src/shared/fr/list.html"),
-        caption=f"Вот список моих комманд, <b>который только пополняется!</b>\n- {"\n- ".join(get())}",
+    # await callback.message.answer_document(
+    #     document=types.FSInputFile(path="src/shared/fr/list.html"),
+    #     caption=f"Вот список моих комманд, <b>который только пополняется!</b>\n- {"\n- ".join(get())}",
+    #     parse_mode="HTML",
+    #     reply_markup=keyboards.get_back_commands_kb()
+    # )
+    await callback.message.edit_text(
+        text=f'<a href="https://telegra.ph/BoostBot--Commands-02-22">BoostBot | Commands</a>\nВот список команд, <b>который только пополняется!</b>\n- {"\n- ".join(get())}',
         parse_mode="HTML",
         reply_markup=keyboards.get_back_commands_kb()
     )
