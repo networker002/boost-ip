@@ -50,7 +50,7 @@ async def _get_schedule_logic(message: types.Message, user_id: int, bot: Bot):
             except FileNotFoundError: print(":(")
             string = """"""
 
-            for day in response[1]:
+            for day in response[1] if response is not None else await sent_message.edit_text("Пока что пусто"):
                 for content in response[1][day]:
                     string += "\n——————————————\n📅 <b>"+day+"</b>\n"
                     for lesson in content:
