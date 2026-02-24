@@ -36,7 +36,7 @@ router = Router()
 async def check_group(message: types.Message):
     check_data = await check_user_group(message.from_user.id)
 
-    if check_data["group_name"].upper() not in ["NULL", ""]:
+    if (check_data["group_name"] and check_data["group_name"].upper() not in ["NULL", ""]):
         keyboard_schedule = keyboards.watch_schedule_edit_group_kb()
         await message.answer(f"Ваша группа - <b>{check_data['group_name']}</b>", parse_mode="HTML", reply_markup=keyboard_schedule)
     
