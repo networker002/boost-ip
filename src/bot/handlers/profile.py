@@ -12,8 +12,11 @@ async def show_profile(message: types.Message):
         group = c["group_name"]
     subscribe = "Пока в разработке"
 
-    await message.reply(
-        f"<b>Твой профиль</b>\n\n<b>┏Имя пользователя: </b>{("@"+username) if not None else "Отсутствует"}\n<b>┣Айди аккаунта: </b>{id_}\n<b>┣Группа: </b>{group}\n<b>┖Подписка: </b>{subscribe}",
-        parse_mode="HTML"
-    )
+    text = f"""<b>Твой профиль</b>
 
+    <b>┏Имя пользователя: </b>{("@"+username) if username else "Отсутствует"}
+    <b>┣Айди аккаунта: </b>{id_}
+    <b>┣Группа: </b>{group}
+    <b>┖Подписка: </b>{subscribe}"""
+
+    await message.answer(text, parse_mode="HTML")
