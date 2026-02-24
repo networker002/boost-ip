@@ -1,6 +1,6 @@
 FROM python:3.12-slim
 
-WORKDIR /src/
+WORKDIR /boost-ip/src/
 
 COPY requirements.txt .
 RUN pip install -r requirements.txt
