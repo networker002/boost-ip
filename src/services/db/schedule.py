@@ -3,6 +3,7 @@ import requests as req
 from collections import defaultdict
 from typing import Dict, List, Any, TypedDict, Optional, Tuple
 from services import get_weeks
+import random
 
 class Lesson(TypedDict):
     time: str
@@ -23,11 +24,17 @@ class Schedule():
                 self.url = data_.get("url") + "data?group="
         except FileNotFoundError: 
             raise FileNotFoundError("Not found!")
-
+        
+        try:
+            with open("config/useragents.txt", "r") as f:
+                data__ = f.read()
+                self.useragents = data__.split("\n")
+        except Exception as e: print(e)
     def get_Time(self) -> dict | tuple:
         try:
             test_url = self.url + "'"
-            resp = req.get(url=test_url)
+            ua = random.choice(self.useragents)
+            resp = req.get(url=test_url, headers={"User-Agent": ua})
             if resp.status_code == 200:
                 Data = resp.json()
                 return Data  # {Times:...}
