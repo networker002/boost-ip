@@ -14,10 +14,12 @@ async def cmd_show_commands(message: types.Message):
     #     document=types.FSInputFile(path="src/shared/fr/list.html"), 
     #     parse_mode="HTML"
     # )
-    await message.answer(
-        text=f'<a href="https://telegra.ph/BoostBot--Commands-02-22">BoostBot | Commands</a>\nВот список команд, <b>который только пополняется!</b>\n- {"\n- ".join(get())}',
-        parse_mode="HTML"
-    )
+    commands_list = "\n- ".join(get())
+    text = f'''<a href="https://telegra.ph/BoostBot--Commands-02-22">BoostBot | Commands</a>
+    Вот список команд, <b>который только пополняется!</b>
+    {commands_list}'''
+
+    await message.answer(text, parse_mode="HTML")
 
 
 @router.callback_query(lambda c: c.data == "show_commands")
