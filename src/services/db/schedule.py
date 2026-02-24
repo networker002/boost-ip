@@ -34,7 +34,7 @@ class Schedule():
         try:
             test_url = self.url + "'"
             ua = random.choice(self.useragents)
-            resp = req.get(url=test_url, headers={"User-Agent": ua})
+            resp = req.get(url=test_url)
             if resp.status_code == 200:
                 Data = resp.json()
                 return Data  # {Times:...}
