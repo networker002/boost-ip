@@ -7,6 +7,7 @@ from services.db import schedule
 from services.db.user_group import check_user_group
 from random import choice as r_choice
 import json
+from pathlib import Path
 
 router = Router()
 
@@ -39,12 +40,14 @@ async def _get_schedule_logic(message: types.Message, user_id: int, bot: Bot):
             response = None
 
         finally:
-            with open("config/example-time.json") as f:
-                data = json.load(f)
-                codes = {}
-                for c in data["Times"]:
-                    codes[c["Code"]] = c["TimeFrom"][-8:-3], c["TimeTo"][-8:-3]
-
+            try:
+                config_path = Path(__file__).parent / "config" / "example-time.json"
+                with open(config_path, encoding="utf-8") as f:
+                    data = json.load(f)
+                    codes = {}
+                    for c in data["Times"]:
+                        codes[c["Code"]] = c["TimeFrom"][-8:-3], c["TimeTo"][-8:-3]
+            except FileNotFoundError: print(":(")
             string = """"""
 
             for day in response[1]:
