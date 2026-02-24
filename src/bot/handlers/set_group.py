@@ -38,7 +38,7 @@ async def check_group(message: types.Message):
 
     if check_data["group_name"].upper() not in ["NULL", ""]:
         keyboard_schedule = keyboards.watch_schedule_edit_group_kb()
-        await message.answer(f"Ваша группа - <b>{check_data["group_name"]}</b>", parse_mode="HTML", reply_markup=keyboard_schedule)
+        await message.answer(f"Ваша группа - <b>{check_data['group_name']}</b>", parse_mode="HTML", reply_markup=keyboard_schedule)
     
 
     else:
