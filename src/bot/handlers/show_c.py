@@ -30,8 +30,10 @@ async def on_show_commands(callback: types.CallbackQuery):
     #     parse_mode="HTML",
     #     reply_markup=keyboards.get_back_commands_kb()
     # )
+    commands_lst = "\n- ".join(get())
     await callback.message.edit_text(
-        text=f'<a href="https://telegra.ph/BoostBot--Commands-02-22">BoostBot | Commands</a>\nВот список команд, <b>который только пополняется!</b>\n- {"\n- ".join(get())}',
+        text=f'''<a href="https://telegra.ph/BoostBot--Commands-02-22">BoostBot | Commands</a>\nВот список команд, <b>который только пополняется!</b>
+{commands_lst}''',
         parse_mode="HTML",
         reply_markup=keyboards.get_back_commands_kb()
     )
