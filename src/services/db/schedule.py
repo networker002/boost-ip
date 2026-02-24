@@ -4,6 +4,7 @@ from collections import defaultdict
 from typing import Dict, List, Any, TypedDict, Optional, Tuple
 from services import get_weeks
 import random
+from pathlib import Path
 
 class Lesson(TypedDict):
     time: str
@@ -17,16 +18,17 @@ class Schedule():
     def __init__(self, group_name: str, url: Optional[str] = None):
         self.group_name = group_name.upper()
         self.url = url
+        self.config_path = Path(__file__).parent / "config" / "example-time.json"
 
         try:
-            with open("config/schedule.json", "r") as file_schedule:
+            with open(self.config_path, encoding="utf-8") as file_schedule:
                 data_ = json.load(file_schedule)
                 self.url = data_.get("url") + "data?group="
         except FileNotFoundError: 
             raise FileNotFoundError("Not found!")
         
         try:
-            with open("config/useragents.txt", "r") as f:
+            with open(self.config_path, encoding="utf-8") as f:
                 data__ = f.read()
                 self.useragents = data__.split("\n")
         except Exception as e: print(e)
@@ -34,7 +36,7 @@ class Schedule():
         try:
             test_url = self.url + "'"
             ua = random.choice(self.useragents)
-            resp = req.get(url=test_url)
+            resp = req.get(url=test_url, headers={"User-Agent":ua})
             if resp.status_code == 200:
                 Data = resp.json()
                 return Data  # {Times:...}
