@@ -35,8 +35,11 @@ class Schedule():
     def get_Time(self) -> dict | tuple:
         try:
             test_url = self.url + "'"
-            ua = random.choice(self.useragents)
-            resp = req.get(url=test_url, headers={"User-Agent":ua})
+            try:
+                ua = random.choice(self.useragents)
+                headers={"User-Agent":ua}
+            except Exception: headers = None
+            resp = req.get(url=test_url, headers=headers)
             if resp.status_code == 200:
                 Data = resp.json()
                 return Data  # {Times:...}
