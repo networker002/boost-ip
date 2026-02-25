@@ -52,13 +52,14 @@ async def _get_schedule_logic(message: types.Message, user_id: int, bot: Bot):
     if res is None:
         await _safe_edit_text(
             sent_message,
-            text="Сначала вы должны зарагестрировать свою группу.\nИспользуйте команду /group"
+            text="Сначала вы должны зарегистрировать свою группу.\nИспользуйте команду /group"
         )
         return
     
     try:
         group_name = res.get("group_name")
         response = schedule.Schedule(group_name=group_name).run_()
+        print(response)
     except Exception as e:
         print("Schedule error:", e)
         response = None
@@ -77,7 +78,7 @@ async def _get_schedule_logic(message: types.Message, user_id: int, bot: Bot):
         print("example-time.json not found :(")
 
     if not response or not isinstance(response, (list, tuple)) or len(response) < 2:
-
+        
         await _safe_edit_text(sent_message, "Пока что пусто")
         return
 

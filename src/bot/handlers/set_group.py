@@ -44,12 +44,12 @@ async def check_group(message: types.Message):
     else:
         kb = keyboards.yes_no_group_want_kb()
         await message.answer(
-            "Вы еще не зарегестрировали группу. <b>Желаете это сделать?</b>",
+            "Вы еще не зарегистрировали группу. <b>Желаете это сделать?</b>",
             parse_mode="HTML",
             reply_markup=kb
         )
-        
-    
+
+
 @router.callback_query(F.data == "want_add_group")
 async def pre_code(callback: types.CallbackQuery, state: FSMContext):
     await callback.message.edit_text("Пожалуйста, введите код для активации:")
@@ -90,7 +90,7 @@ async def set_group(message: types.Message, state: FSMContext):
 async def dont_notice_cr_group(callback: types.CallbackQuery, state: FSMContext):
     await state.clear()
     await callback.message.answer("Хорошо. Чтобы узнать расписание, вы должны указать группу (потом можно ее изменить)")
-    await callback.answer("Регестрация отменена")
+    await callback.answer("Регистрация отменена")
 
 
 
