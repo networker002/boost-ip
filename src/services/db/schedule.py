@@ -18,25 +18,25 @@ class Schedule():
     def __init__(self, group_name: str, url: Optional[str] = None):
         self.group_name = group_name.upper()
         self.url = url
-        self.config_path = Path(__file__).parent / "config" / "example-time.json"
+        self.ua_path = "/config/useragents.txt"
+        self.url_path = "/config/schedule.json"
 
         try:
-            with open(self.config_path, encoding="utf-8") as file_schedule:
+            with open(self.url_path, encoding="utf-8") as file_schedule:
                 data_ = json.load(file_schedule)
                 self.url = data_.get("url") + "data?group="
         except FileNotFoundError: 
             raise FileNotFoundError("Not found!")
         
         try:
-            with open(self.config_path, encoding="utf-8") as f:
-                data__ = f.read()
-                self.useragents = data__.split("\n")
-        except Exception as e: print(e)
+            with open(self.ua_path, encoding="utf-8") as f:
+                self.data_ua = [line.strip() for line in f if line.strip()]
+        except Exception as e: self.data_ua = []
     def get_Time(self) -> dict | tuple:
         try:
             test_url = self.url + "'"
             try:
-                ua = random.choice(self.useragents)
+                ua = random.choice(self.data_ua)
                 headers={"User-Agent":ua}
             except Exception: headers = None
             resp = req.get(url=test_url, headers=headers)
