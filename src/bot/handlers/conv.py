@@ -9,7 +9,6 @@ import io
 from aiogram.types import Message
 from aiogram.filters import BaseFilter
 from services import html_do
-from schedule import cmd_get_schedule
 
 router = Router()
 
