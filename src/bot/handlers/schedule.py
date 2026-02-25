@@ -59,6 +59,7 @@ async def _get_schedule_logic(message: types.Message, user_id: int, bot: Bot):
     try:
         group_name = res.get("group_name")
         response = schedule.Schedule(group_name=group_name).run_()
+        print(61)
         print(response)
     except Exception as e:
         print("Schedule error:", e)
@@ -76,7 +77,8 @@ async def _get_schedule_logic(message: types.Message, user_id: int, bot: Bot):
                 )
     except FileNotFoundError:
         print("example-time.json not found :(")
-
+    print(80)
+    print(response)
     if not response or not isinstance(response, (list, tuple)) or len(response) < 2:
         
         await _safe_edit_text(sent_message, "Пока что пусто")
