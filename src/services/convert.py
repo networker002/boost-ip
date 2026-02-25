@@ -2,7 +2,6 @@ import io
 from PIL import Image
 from fpdf import FPDF
 from docx import Document
-import pandas as pd
 import os
 
 class Converter:
