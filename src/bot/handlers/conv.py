@@ -9,6 +9,7 @@ import io
 from aiogram.types import Message
 from aiogram.filters import BaseFilter
 from services import html_do
+from schedule import cmd_get_schedule
 
 router = Router()
 
@@ -47,6 +48,10 @@ async def test(message: Message):
 
 @router.message(Command("convert"))
 async def reg_conv(message: types.Message, state: FSMContext):
+    # if message.text.strip() == "/convert schedule":
+    #     await message.answer("Конвертирую расписание!")
+
+        
     await message.answer(
         "Выберите тип конвертации:",
         reply_markup=keyboards.main_conversion_kb()

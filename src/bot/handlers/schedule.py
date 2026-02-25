@@ -59,26 +59,27 @@ async def _get_schedule_logic(message: types.Message, user_id: int, bot: Bot):
     try:
         group_name = res.get("group_name")
         response = schedule.Schedule(group_name=group_name).run_()
-        print(61)
-        print(response)
+        # print(61)
+        # print(response)
     except Exception as e:
         print("Schedule error:", e)
         response = None
 
     codes = {}
     try:
-        config_path = Path(__file__).parent.parent.parent / "config" / "example-time.json"
+        config_path = Path(__file__).parent.parent.parent.parent / "config" / "example-time.json"
         with open(config_path, encoding="utf-8") as f:
             data = json.load(f)
-            for c in data.get("Times", []):
+            print(data)
+            for c in data["Times"]:
                 codes[c["Code"]] = (
                     c["TimeFrom"][-8:-3],
                     c["TimeTo"][-8:-3],
                 )
     except FileNotFoundError:
         print("example-time.json not found :(")
-    print(80)
-    print(response)
+    # print(80)
+    # print(response)
     if not response:
         await _safe_edit_text(sent_message, "Пока что пусто")
         return
@@ -96,10 +97,12 @@ async def _get_schedule_logic(message: types.Message, user_id: int, bot: Bot):
             string += f"""\n\n——————————————\n📅 <b>{day}</b>"""
             for lesson in content:
                 time_code = lesson["time_code"]
+                # print(100)
                 time_range = codes.get(time_code, ("", ""))
+                # print(time_range)
                 string += (
                     f"\n\n⏰ <b>{lesson['time']}</b>"
-                    f"\n{time_range[0]} {time_range[1]}"
+                    f" {time_range[0]} - {time_range[1]}\n"
                 )
                 string += f"📚 {lesson['subject']}"
 
