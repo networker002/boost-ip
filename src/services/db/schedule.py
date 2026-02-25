@@ -15,17 +15,16 @@ class Lesson(TypedDict):
      
 
 class Schedule():
-    def __init__(self, group_name: str, url: Optional[str] = None):
+    def __init__(self, group_name: str):
         self.group_name = group_name.upper()
-        self.url = url
-        self.ua_path = "/config/useragents.txt"
-        self.url_path = "/config/schedule.json"
+        self.ua_path = Path(__file__).parent.parent.parent.parent / "config" / "useragents.txt"
+        self.url_path = Path(__file__).parent.parent.parent.parent / "config" / "schedule.json"
 
         try:
             with open(self.url_path, encoding="utf-8") as file_schedule:
                 data_ = json.load(file_schedule)
                 self.url = data_.get("url") + "data?group="
-        except FileNotFoundError: 
+        except FileNotFoundError:
             raise FileNotFoundError("Not found!")
         
         try:
@@ -34,12 +33,11 @@ class Schedule():
         except Exception as e: self.data_ua = []
     def get_Time(self) -> dict | tuple:
         try:
-            test_url = self.url + "'"
             try:
                 ua = random.choice(self.data_ua)
                 headers={"User-Agent":ua}
             except Exception: headers = None
-            resp = req.get(url=test_url, headers=headers)
+            resp = req.get(url=self.url + "'", headers=headers)
             if resp.status_code == 200:
                 Data = resp.json()
                 return Data  # {Times:...}

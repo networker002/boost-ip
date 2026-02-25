@@ -67,7 +67,7 @@ async def _get_schedule_logic(message: types.Message, user_id: int, bot: Bot):
 
     codes = {}
     try:
-        config_path = "/config/example-time.json"
+        config_path = Path(__file__).parent.parent.parent / "config" / "example.json"
         with open(config_path, encoding="utf-8") as f:
             data = json.load(f)
             for c in data.get("Times", []):
@@ -79,8 +79,7 @@ async def _get_schedule_logic(message: types.Message, user_id: int, bot: Bot):
         print("example-time.json not found :(")
     print(80)
     print(response)
-    if not response or not isinstance(response, (list, tuple)) or len(response) < 2:
-        
+    if not response:
         await _safe_edit_text(sent_message, "Пока что пусто")
         return
 
@@ -94,15 +93,13 @@ async def _get_schedule_logic(message: types.Message, user_id: int, bot: Bot):
         for content in contents:
             if not content:
                 continue
-            string += f"""——————————————
-📅 <b>{day}</b>
-"""
+            string += f"""\n\n——————————————\n📅 <b>{day}</b>"""
             for lesson in content:
                 time_code = lesson["time_code"]
                 time_range = codes.get(time_code, ("", ""))
                 string += (
-                    f"⏰ <b>{lesson['time']}</b> "
-                    f"{time_range[0]} - {time_range[1]}"
+                    f"\n\n⏰ <b>{lesson['time']}</b>"
+                    f"\n{time_range[0]} {time_range[1]}"
                 )
                 string += f"📚 {lesson['subject']}"
 
@@ -120,5 +117,5 @@ async def _get_schedule_logic(message: types.Message, user_id: int, bot: Bot):
     except TelegramBadRequest:
         pass
 
-    final_text = f"<b>Вот твое расписание</b><br>({str(week_name).capitalize()}){string}"
+    final_text = f"<b>Вот твое расписание</b>\n({str(week_name).capitalize()}){string}"
     await _safe_edit_text(sent_message, final_text, parse_mode="HTML")

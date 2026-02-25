@@ -4,8 +4,8 @@ from typing import *
 
 try:
     tz = ZoneInfo("Europe/Moscow")
-    now = datetime.datetime.now(tz)
-    start = datetime.datetime(now.year, 1, 5, tzinfo=tz)
+    now = datetime.datetime.now(tz=tz)
+    start = datetime.datetime(2026, 1, 5, tzinfo=tz)
 except Exception as e:
     print(f"TZ Error: {e}")
     tz = None
@@ -20,29 +20,19 @@ mapping = {
 }
 
 week_passed = (now - start).days // 7
-now_is = mapping.get(week_passed % 4, "Неизвестная неделя")
-
 
 days_name = {1:"Понедельник", 2:"Вторник", 3:"Среда", 4:"Четверг", 5:"Пятница", 6:"Суббота"}
 
 def group_now_week(data: Dict[int, Dict[int, List[Dict[str, Any]]]]) -> Tuple[str, Dict]:
-    response = {
-        "Понедельник": [],
-        "Вторник": [], 
-        "Среда": [], 
-        "Четверг": [],
-        "Пятница": [],
-        "Суббота": []
-    }
-    now_is = mapping.get(week_passed%4)
-
-    days =  data
-
+    now_is = mapping.get(week_passed % 4, "Неизвестная неделя")
+    
+    response = {"Понедельник": [], "Вторник": [], "Среда": [], "Четверг": [], "Пятница": [], "Суббота": []}
+    
     for i in range(1, 7):
         try:
-            response[days_name.get(i)].append(days[i]["divided"][now_is])
-        except KeyError:
+            if now_is in data[i]["divided"]:
+                response[days_name.get(i)].append(data[i]["divided"][now_is])
+        except (KeyError, TypeError):
             pass
-
-
-    return now_is, response
+    
+    return now_is or "Неизвестная неделя", response
