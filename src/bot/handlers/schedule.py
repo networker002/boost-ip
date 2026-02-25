@@ -49,7 +49,7 @@ async def _get_schedule_logic(message: types.Message, user_id: int, bot: Bot):
                         codes[c["Code"]] = c["TimeFrom"][-8:-3], c["TimeTo"][-8:-3]
             except FileNotFoundError: print(":(")
             string = """"""
-
+            print(response)
             if response is not None and response[1]:
                 for day in response[1]:
                     for content in response[1][day]:
