@@ -67,7 +67,7 @@ async def _get_schedule_logic(message: types.Message, user_id: int, bot: Bot):
 
     codes = {}
     try:
-        config_path = Path(__file__).parent.parent.parent / "config" / "example.json"
+        config_path = Path(__file__).parent.parent.parent / "config" / "example-time.json"
         with open(config_path, encoding="utf-8") as f:
             data = json.load(f)
             for c in data.get("Times", []):
