@@ -101,10 +101,10 @@ async def _get_schedule_logic(message: types.Message, user_id: int, bot: Bot):
                 time_range = codes.get(time_code, ("", ""))
                 # print(time_range)
                 string += (
-                    f"\n\n⏰ <b>{lesson['time']}</b>"
+                    f"\n\n<b>{lesson['time']}</b>"
                     f" {time_range[0]} - {time_range[1]}\n"
                 )
-                string += f"📚 {lesson['subject']}"
+                string += f"{lesson['subject']} ({lesson["room"]})"
 
     if not string:
         await _safe_edit_text(sent_message, "Пока что пусто")
