@@ -5,12 +5,12 @@ from typing import *
 try:
     tz = ZoneInfo("Europe/Moscow")
     now = datetime.datetime.now(tz=tz)
-    start = datetime.datetime(2026, 1, 12, tzinfo=tz)
+    start = datetime.datetime(2026, 1, 1, tzinfo=tz)
 except Exception as e:
     print(f"TZ Error: {e}")
     tz = None
     now = datetime.datetime.now()
-    start = datetime.datetime(now.year, 1, 12)
+    start = datetime.datetime(now.year, 1, 1)
 
 mapping = {
     0: "1 числитель",
@@ -36,3 +36,5 @@ def group_now_week(data: Dict[int, Dict[int, List[Dict[str, Any]]]]) -> Tuple[st
             pass
     
     return now_is or "Неизвестная неделя", response
+
+print(mapping.get(week_passed % 4, "Неизвестная неделя"))
