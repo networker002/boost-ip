@@ -1,7 +1,7 @@
 # Telegram handler which sending welcome text
 
 from aiogram import types, Router
-from aiogram.filters import Command
+from aiogram.filters import Command, CommandObject
 from bot.conf import config_tg
 from utils import keyboards
 import random
@@ -11,7 +11,10 @@ router = Router()
 
 
 @router.message(Command("start"))
-async def cmd_start(message: types.Message):
+async def cmd_start(message: types.Message, c: CommandObject = None):
+    if c:
+        payload = c.args
+    elif c == None: payload = None
     try:
         await message.react([types.ReactionTypeEmoji(emoji="🏆")])
     except AttributeError:
@@ -34,6 +37,13 @@ async def cmd_start(message: types.Message):
         try:
             effect_id = random.choice(config_tg.message_effects)
         except Exception: effect_id = None
+
+    if payload:
+        if payload.startswith() == "group":
+            group = payload.split("_")[1]
+            import set_group
+            await set_group.set_user_group(message.from_user.id, group.capitalize())
+            await message.answer(f"Привет! Группа <b>{group.capitalize()}</b> успешно установлена!", parse_mode="HTML")
 
     await message.answer(
         text=welcome_text,

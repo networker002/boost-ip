@@ -10,6 +10,7 @@ async def show_profile(message: types.Message):
     c = await check_user_group(id_)
     if c:
         group = c["group_name"]
+    else: group = "Не указана"
     subscribe = "Пока в разработке"
 
     text = f"""<b>Твой профиль</b>
@@ -18,5 +19,4 @@ async def show_profile(message: types.Message):
     <b>┣Айди аккаунта: </b>{id_}
     <b>┣Группа: </b>{group}
     <b>┖Подписка: </b>{subscribe}"""
-
     await message.answer(text, parse_mode="HTML")

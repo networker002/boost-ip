@@ -9,4 +9,6 @@ RUN pip install -r requirements.txt
 COPY src/ ./src/
 COPY config/ ./config/
 
+EXPOSE 8000
+
 CMD ["python", "src/main.py"]
