@@ -39,7 +39,8 @@ async def cmd_start(message: types.Message, c: CommandObject = None):
         except Exception: effect_id = None
 
     if payload:
-        if payload.startswith() == "group":
+        if payload.startswith("group"):
+            
             group = payload.split("_")[1]
             import set_group
             await set_group.set_user_group(message.from_user.id, group.capitalize())
