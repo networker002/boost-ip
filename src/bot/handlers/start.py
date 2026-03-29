@@ -1,20 +1,22 @@
 # Telegram handler which sending welcome text
 
 from aiogram import types, Router
-from aiogram.filters import Command, CommandObject
+from aiogram.filters import Command, CommandObject, CommandStart
 from bot.conf import config_tg
 from utils import keyboards
 import random
 from services.db.user_group import auto_add
+import base64
+from urllib.parse import parse_qs
 
 router = Router()
 
 
-@router.message(Command("start"))
-async def cmd_start(message: types.Message, c: CommandObject = None):
-    if c:
-        payload = c.args
-    elif c == None: payload = None
+@router.message(CommandStart())
+async def cmd_start(message: types.Message, command: CommandObject = None):
+    payload = command.args if command and command.args else None
+    print(command)
+    print(payload)
     try:
         await message.react([types.ReactionTypeEmoji(emoji="🏆")])
     except AttributeError:
@@ -40,20 +42,33 @@ async def cmd_start(message: types.Message, c: CommandObject = None):
 
     if payload:
         if payload.startswith("group"):
+            b64_part = payload.split("_", 1)[1]
+            rem = len(b64_part) % 4
+            if rem > 0:
+                b64_part += "=" * (4 - rem)
             
-            group = payload.split("_")[1]
-            import set_group
-            await set_group.set_user_group(message.from_user.id, group.capitalize())
-            await message.answer(f"Привет! Группа <b>{group.capitalize()}</b> успешно установлена!", parse_mode="HTML")
-
+            try:
+                decoded_bytes = base64.urlsafe_b64decode(b64_part)
+                decoded_str = decoded_bytes.decode("utf-8")
+                
+                from services.db.user_group import set_user_group
+                await set_user_group(message.from_user.id, decoded_str.capitalize())
+                
+                await message.answer(f"Привет! Группа <b>{decoded_str.capitalize()}</b> успешно установлена!", parse_mode="HTML")
+            except Exception as e:
+                print(e)
+                
     await message.answer(
         text=welcome_text,
         message_effect_id=effect_id,
         reply_markup=kb,
         parse_mode="HTML"
     )
-
+    # print(1)
     await auto_add(message.from_user.id)
+    # print(message.from_user.id)
+    # print(d)
+    # print("done")
 
 
 @router.callback_query(lambda c: c.data == "go_back_commands")
@@ -61,7 +76,7 @@ async def back_to_start(callback: types.CallbackQuery):
 
     kb = keyboards.get_commands_kb()
     
-    welcome_text = f"Привет, {callback.from_user.first_name.capitalize()}! Я <b>BoostBot</b> 🚀\nНажми на кнопку ниже, чтобы увидеть что я могу"
+    welcome_text = f"Привет, {callback.from_user.first_name.capitalize()}! Я <b>BoostBot</b> 🚀\nНажми на кнопку ниже, чтобы увидеть что я могу\n\n<b>NEW Или вопользуйтесь нашим приложением 🔥</b>"
     await callback.message.edit_text(
         welcome_text,
         reply_markup=kb,

@@ -19,7 +19,7 @@ async def auto_add(tg_id: int):
         lambda: supabase.table("user_groups").select("tg_id").eq("tg_id", tg_id).execute()
     )
 
-    if not resp:
+    if not resp.data:
         add = await async_execute_supabase_call(
             lambda: supabase.table("user_groups").insert({"tg_id": tg_id}).execute()
         )
