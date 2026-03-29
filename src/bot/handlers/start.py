@@ -29,7 +29,7 @@ async def cmd_start(message: types.Message, command: CommandObject = None):
             # logger
             pass
 
-    welcome_text = f"Привет, {message.from_user.first_name.capitalize()}! Я <b>BoostBot</b> 🚀\nНажми на кнопку ниже, чтобы увидеть что я могу"
+    welcome_text = f"Привет, {message.from_user.first_name.capitalize()}! Я <b>BoostBot</b> 🚀\nНажми на кнопку ниже, чтобы увидеть что я могу\n\n<b>NEW Или вопользуйтесь нашим приложением 🔥</b>"
     
 
     kb = keyboards.get_commands_kb()
