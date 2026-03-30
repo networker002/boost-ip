@@ -15,7 +15,7 @@ async def send_message_schedule(bot: Bot):
     builder = InlineKeyboardBuilder()
     builder.row(InlineKeyboardButton(
         text="Расписание 🚀", 
-        web_app=WebAppInfo(url="https://t.me/infiniteuseful_robot/webapp")
+        web_app=WebAppInfo(url="https://networker002.github.io/webapp/")
     ))
     response_db = await async_execute_supabase_call(
         lambda: supabase.table("user_groups").select("tg_id", "group_name").execute
