@@ -17,6 +17,8 @@ days_map = {
         "":["Понедельник", "Вторник", "Среда", "Четверг", "Пятница", "Суббота"]
     }
 
+
+
 @router.inline_query()
 async def schedule_inline(inline_query: InlineQuery):
     text = inline_query.query.strip().lower()
@@ -27,6 +29,8 @@ async def schedule_inline(inline_query: InlineQuery):
     group_name = group.get("group_name", "ИС-25-14О")
     
     codes = {}
+    counter = 0
+    d2 = 0
     try:
         config_path = Path(__file__).parent.parent.parent.parent / "config" / "example-time.json"
         with open(config_path, encoding="utf-8") as f:
@@ -59,19 +63,27 @@ async def schedule_inline(inline_query: InlineQuery):
         return
     
     try:
+        
         week_type, sc = await schedule.Schedule(group_name=group_name).get_schedule_async()
         if type(target_day_code) == list:
             result = sc
         else:
             result = sc.get(target_day_code)
         string = """"""
-        if text in [" "*x for x in range(0, 13)] or text in ["нед", "неделя"]:
-            text = "неделя"
-            for day, contents in result.items():
+        if text in [" " * x for x in range(0, 13)] or text in ["нед", "неделя"]:
+            text = "неделя" 
+            for day, contents in result.items(): 
                 for content in contents:
                     if not content:
                         continue
-                    string += f"""\n\n——————————————\n📅 <b>{day}</b>"""
+                    if counter == 0:
+                        string += f"""\n\n<blockquote>——————————————\n📅 <b>{day}</b>"""
+                    
+                    else:
+                        string += f"""\n\n——————————————\n📅 <b>{day}</b>"""
+
+                    counter += 1
+
                     for lesson in content:
                         time_code = lesson["time_code"]
                         # print(100)
@@ -81,7 +93,7 @@ async def schedule_inline(inline_query: InlineQuery):
                             f"\n\n<b>{lesson['time']}</b>"
                             f" {time_range[0]} - {time_range[1]}\n"
                         )
-                        string += f"{lesson['subject']} ({lesson["room"]})"
+                        string += f"{lesson['subject']} ({lesson['room']})"
         else:
             for lesson in result[0]:
                 #lesson = content
@@ -89,12 +101,21 @@ async def schedule_inline(inline_query: InlineQuery):
                     # print(100)
                 time_range = codes.get(time_code, ("", ""))
                     # print(time_range)
-                string += (
+                if d2 == 0:
+                    string += (
+                            f"\n\n<blockquote><b>{lesson['time']}</b>"
+                            f" {time_range[0]} - {time_range[1]}\n"
+                        )
+                    
+                else:
+                    string += (
                             f"\n\n<b>{lesson['time']}</b>"
                             f" {time_range[0]} - {time_range[1]}\n"
                         )
+                d2 += 1
                 string += f"{lesson['subject']} ({lesson["room"]})"
         print(week_type)
+        print(counter, d2)
         print(string)
         print(result)
     except Exception as e:
@@ -109,6 +130,7 @@ async def schedule_inline(inline_query: InlineQuery):
             description="Значит - выходной!"
         )
         print(week_type)
+        print(e)
         print(string)
         await inline_query.answer(results=[res], cache_time=30)
         return
@@ -122,7 +144,7 @@ async def schedule_inline(inline_query: InlineQuery):
         thumbnail_url = "https://img.icons8.com/?size=100&id=45967&format=png&color=000000"
     else:
         description_text = f"Расписание найдено"
-        content_text = f"<b>📆 {", ".join(target_day_code) if type(target_day_code) == list else target_day_code}</b>\n<b>{str(week_type).title()}</b>\n<blockquote>{string}</blockquote>"
+        content_text = f"<b>📆 {", ".join(target_day_code) if type(target_day_code) == list else target_day_code}</b>\n<b>{str(week_type).title()}</b>\n{string}</blockquote>"
         thumbnail_url = "https://img.icons8.com/?size=100&id=D45ofLrj1Mp5&format=png&color=000000"
 
     res = InlineQueryResultArticle(
