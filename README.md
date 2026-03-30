@@ -65,7 +65,7 @@ However, if you want to unlock *advanced capabilities*, test *premium features*,
 # Contact us
 
 <div style="display: flex; justify-content: center; align-items: center; gap: 12px; padding: 20px;">
-  <a href="https://t.me/infiniteuseful_robot" style="display: flex; align-items: center; gap: 8px; text-decoration: none; color: inherit; padding:.5em 1em; border-radius:24px; background:rgba(200, 255, 255, .5); box-shadow: 4px 4px 6px rgba(0,0,0,.1);">
+  <a href="https://t.me/mietcbot" style="display: flex; align-items: center; gap: 8px; text-decoration: none; color: inherit; padding:.5em 1em; border-radius:24px; background:rgba(200, 255, 255, .5); box-shadow: 4px 4px 6px rgba(0,0,0,.1);">
     <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 48 48" style="flex-shrink: 0;">
       <path fill="#29b6f6" d="M24,4C13,4,4,13,4,24s9,20,20,20s20-9,20-20S35,4,24,4z"></path>
       <path fill="#fff" d="M34,15l-3.7,19.1c0,0-0.2,0.9-1.2,0.9c-0.6,0-0.9-0.3-0.9-0.3L20,28l-4-2l-5.1-1.4c0,0-0.9-0.3-0.9-1c0-0.6,0.9-0.9,0.9-0.9l21.3-8.5c0,0,0.7-0.2,1.1-0.2c0.3,0,0.6,0.1,0.6,0.5C34,14.8,34,15,34,15z"></path>

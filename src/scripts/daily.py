@@ -1,6 +1,8 @@
 from aiogram import Bot
 import os, sys
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+from aiogram.utils.keyboard import InlineKeyboardBuilder
+from aiogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, WebAppInfo
 from dotenv import load_dotenv
 from services.db.client import supabase
 from services.db.user_group import async_execute_supabase_call
@@ -10,6 +12,11 @@ import random
 import asyncio
 
 async def send_message_schedule(bot: Bot):
+    builder = InlineKeyboardBuilder()
+    builder.row(InlineKeyboardButton(
+        text="Расписание 🚀", 
+        web_app=WebAppInfo(url="https://networker002.github.io/webapp/")
+    ))
     response_db = await async_execute_supabase_call(
         lambda: supabase.table("user_groups").select("tg_id", "group_name").execute
     )
@@ -131,7 +138,8 @@ async def send_message_schedule(bot: Bot):
                     await bot.send_message(
                         user["tg_id"],
                         text="<b> "+(random.choice(text_has_group[weekday]) if user["group_name"] not in ["NULL", ""] else random.choice(text_doesnt_has_group[weekday]))+" </b>",
-                        parse_mode="HTML"
+                        parse_mode="HTML",
+reply_markup=builder.as_markup()
                     )
                     await asyncio.sleep(0.5)
 

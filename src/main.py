@@ -2,7 +2,7 @@ import asyncio
 import os
 from dotenv import load_dotenv
 from aiogram import Bot, Dispatcher
-from bot.handlers import start, show_c, conv, schedule, set_group, profile
+from bot.handlers import start, show_c, conv, schedule, set_group, profile, inline
 from utils.anti_flood import AntiFloodMiddleware
 import threading
 
@@ -18,7 +18,8 @@ dp.include_router(show_c.router)
 dp.include_router(conv.router)
 dp.include_router(set_group.router)
 dp.include_router(schedule.router)
-dp.include_router(profile.router)   
+dp.include_router(profile.router)
+dp.include_router(inline.router)
 
 # async def main():
 #     await dp.start_polling(bot)
