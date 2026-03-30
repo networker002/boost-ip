@@ -2,6 +2,7 @@ from aiogram import Bot
 import os, sys
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from aiogram.utils.keyboard import InlineKeyboardBuilder
+from aiogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, WebAppInfo
 from dotenv import load_dotenv
 from services.db.client import supabase
 from services.db.user_group import async_execute_supabase_call
