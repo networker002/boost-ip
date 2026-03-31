@@ -155,7 +155,7 @@ class Schedule():
                 'time': time_name,
                 'time_code': time_idx,
                 'subject': lesson["Class"]["Name"],
-                'teacher': lesson["Class"]["Teacher"],
+                'teacher': lesson["Class"]["TeacherFull"],
                 'room': lesson["Room"]["Name"] or "Не указана"
             }
             
