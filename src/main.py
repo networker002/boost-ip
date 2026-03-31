@@ -111,6 +111,7 @@ def get_schedule(group: str):
                     f"<h6 class='time'> {time_range[0]} - {time_range[1]}</h6>"
                 )
                 string += f"<span class='subject'>{lesson['subject']}</span> <span class='room'>({lesson["room"]})</span>"
+            string += f"<h3 class='teacher'>{lesson['teacher']}</h3>"
             string += "</div>"
     if not string:
         return "Пока что пусто"
