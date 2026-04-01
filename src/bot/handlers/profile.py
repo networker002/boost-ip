@@ -6,7 +6,7 @@ router = Router()
 @router.message(Command("profile"))
 async def show_profile(message: types.Message):
     username = message.from_user.first_name
-if Len(str(username)) > 13: username = str(username)[:10] + "..."
+    if Len(str(username)) > 13: username = str(username)[:10] + "..."
     id_ = message.from_user.id
     c = await check_user_group(id_)
     if c:
