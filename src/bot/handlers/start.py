@@ -29,7 +29,7 @@ async def cmd_start(message: types.Message, command: CommandObject = None):
             # logger
             pass
 
-    welcome_text = f"Привет, {message.from_user.first_name.capitalize()}! Я <b>BoostBot</b> 🚀\nНажми на кнопку ниже, чтобы увидеть что я могу\n\n<b>NEW Или вопользуйтесь нашим приложением 🔥</b>"
+    welcome_text = f"Привет, {message.from_user.first_name.capitalize()}! Я <b>BoostBot</b> <tg-emoji emoji-id="5445284980978621387">🚀</tg-emoji>\nНажми на кнопку ниже, чтобы увидеть что я могу\n\n<b><tg-emoji emoji-id="5382357040008021292">📦</tg-emoji> Или вопользуйтесь нашим приложением 🔥</b>"
     
 
     kb = keyboards.get_commands_kb()
@@ -76,7 +76,7 @@ async def back_to_start(callback: types.CallbackQuery):
 
     kb = keyboards.get_commands_kb()
     
-    welcome_text = f"Привет, {callback.from_user.first_name.capitalize()}! Я <b>BoostBot</b> 🚀\nНажми на кнопку ниже, чтобы увидеть что я могу\n\n<b>NEW Или вопользуйтесь нашим приложением 🔥</b>"
+    welcome_text = f"Привет, {callback.from_user.first_name.capitalize()}! Я <b>BoostBot</b> <tg-emoji emoji-id="5445284980978621387">🚀</tg-emoji>\nНажми на кнопку ниже, чтобы увидеть что я могу\n\n<b> Или вопользуйтесь нашим приложением 🔥</b>"
     await callback.message.edit_text(
         welcome_text,
         reply_markup=kb,
