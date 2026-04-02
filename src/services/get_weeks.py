@@ -9,7 +9,7 @@ try:
 except Exception as e:
     print(f"TZ Error: {e}")
     tz = None
-    now = datetime.timedelta. datetime.datetime.now()
+    now = datetime.datetime.now()
     start = datetime.datetime(now.year, 4, 30)
 
 mapping = {
