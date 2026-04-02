@@ -2,12 +2,22 @@ import requests
 import json
 import datetime
 from pathlib import Path
-
+import random
 
 def groups_req() -> None:
     url = "https://www.miet.ru/schedule/groups"
     try:
-        res = requests.get(url=url)
+        with open(Path(__file__).parent.parent.parent / "config" / "useragents.txt", encoding="utf-8") as f:
+            user_agents = [line.strip() for line in f.readlines() if line.strip()]
+    except FileNotFoundError:
+        user_agents = ["Mozilla/5.0"]
+    
+    headers = {
+        "User-Agent": random.choice(user_agents) if user_agents else "Mozilla/5.0"
+    }
+
+    try:
+        res = requests.get(url=url, headers=headers, timeout=10)
         if res.status_code == 200:
             data = res.json()
             create_time = datetime.datetime.now().isoformat()
@@ -50,7 +60,6 @@ def get_groups() -> list:
         return get_groups()
     
     except (json.JSONDecodeError, FileNotFoundError, KeyError):
-        # Если файл пустой (JSONDecodeError) или его нет — качаем заново
         print("Groups file is empty or corrupted. Re-fetching...")
         groups_req()
         
