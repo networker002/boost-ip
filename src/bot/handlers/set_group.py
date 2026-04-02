@@ -69,7 +69,7 @@ async def check_code(callback: types.CallbackQuery, state: FSMContext):
 @router.message(F.text, GroupState.wanting_crate_group)
 async def set_group(message: types.Message, state: FSMContext):
     group_name = message.text.strip().upper()
-    groups_list = await get_gr_names.get_groups()
+    groups_list = get_gr_names.get_groups()
 
     if group_name not in groups_list:
         await message.answer("Такой группы не существует. Пожалуйста, проверьте правильность ввода.")
@@ -105,7 +105,7 @@ async def watch_schedule_edit_by_btn(callback: types.CallbackQuery, state: FSMCo
 @router.message(F.text, EditingGroup.waiting_new_group)
 async def edit_schedule(message: types.Message, state: FSMContext):
     new_group = message.text.strip().upper()
-    group_list = await get_gr_names.get_groups()
+    group_list = get_gr_names.get_groups()
     
     if new_group not in group_list:
         await message.answer("Такой группы не существует. Пожалуйста, проверьте правильность ввода.")
