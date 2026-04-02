@@ -8,6 +8,7 @@ import random
 from services.db.user_group import auto_add
 import base64
 from urllib.parse import parse_qs
+from services import get_gr_names
 
 router = Router()
 
@@ -39,7 +40,9 @@ async def cmd_start(message: types.Message, command: CommandObject = None):
         try:
             effect_id = random.choice(config_tg.message_effects)
         except Exception: effect_id = None
-
+        
+    await auto_add(message.from_user.id)
+    
     if payload:
         if payload.startswith("group"):
             b64_part = payload.split("_", 1)[1]
@@ -50,11 +53,16 @@ async def cmd_start(message: types.Message, command: CommandObject = None):
             try:
                 decoded_bytes = base64.urlsafe_b64decode(b64_part)
                 decoded_str = decoded_bytes.decode("utf-8")
+                groups_list = await get_gr_names.get_groups()
                 
-                from services.db.user_group import set_user_group
-                await set_user_group(message.from_user.id, decoded_str.capitalize())
-                
-                await message.answer(f"Привет! Группа <b>{decoded_str.capitalize()}</b> успешно установлена!", parse_mode="HTML")
+                if decoded_str.upper() not in groups_list:
+                    await message.answer(f"Группа <b>{decoded_str.upper()}</b> не найдена в списке доступных групп. Пожалуйста, проверьте данные группы.", parse_mode="HTML")
+                    return
+                elif decoded_str.upper() in groups_list:                    
+                    from services.db.user_group import set_user_group
+                    await set_user_group(message.from_user.id, decoded_str.upper())            
+                    await message.answer(f"Привет! Группа <b>{decoded_str.upper()}</b> успешно установлена!", parse_mode="HTML")
+                    
             except Exception as e:
                 print(e)
                 
@@ -65,7 +73,6 @@ async def cmd_start(message: types.Message, command: CommandObject = None):
         parse_mode="HTML"
     )
     # print(1)
-    await auto_add(message.from_user.id)
     # print(message.from_user.id)
     # print(d)
     # print("done")

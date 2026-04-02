@@ -2,25 +2,25 @@ from aiogram import types, F, Router
 from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
-from dotenv import load_dotenv
+#from dotenv import load_dotenv
 import os
 from services.db.user_group import check_user_group, set_user_group
-from utils import keyboards, validate_group
+from utils import keyboards
+from services import get_gr_names
 
 
-load_dotenv()
+# load_dotenv()
 
 
-ACCESS_KEY = os.getenv("GROUP_SECRET")
-if not ACCESS_KEY:
-    raise ValueError("GROUP_SECRET not set in .env")
+# ACCESS_KEY = os.getenv("GROUP_SECRET")
+# if not ACCESS_KEY:
+#     raise ValueError("GROUP_SECRET not set in .env")
 
 
 
 class GroupState(StatesGroup):
     wanting_crate_group = State()
     waiting_for_code = State()
-
 
 
 class EditingGroup(StatesGroup):
@@ -50,40 +50,37 @@ async def check_group(message: types.Message):
         )
 
 
-@router.callback_query(F.data == "want_add_group")
-async def pre_code(callback: types.CallbackQuery, state: FSMContext):
-    await callback.message.edit_text("Пожалуйста, введите код для активации:")
-    await state.set_state(GroupState.waiting_for_code)
-    await callback.answer()
+# @router.callback_query()
+# async def pre_code(callback: types.CallbackQuery, state: FSMContext):
+#     await callback.message.edit_text("Пожалуйста, введите код для активации:")
+#     await state.set_state(GroupState.waiting_for_code)
+#     await callback.answer()
 
 
 
-@router.message(F.text, GroupState.waiting_for_code)
-async def check_code(message: types.Message, state: FSMContext):
-    user_nput = message.text
-
-
-    if ACCESS_KEY == user_nput:
-        await message.reply("Супер! Код успешно активирован. Теперь введите свою группу - я вас зарегестрирую: ")
-        await state.set_state(GroupState.wanting_crate_group)
-    else: await message.reply("Упс! Возможно, код неправильный. Пожалуйста, перепроверьте данные или обратитесь в поддержку")
+@router.message(F.data == "want_add_group")
+async def check_code(callback: types.CallbackQuery, state: FSMContext):
+    
+    await callback.message.reply("Введите свою группу - я вас зарегестрирую: ")
+    await state.set_state(GroupState.wanting_crate_group)
     # await message.answer()
 
 
 @router.message(F.text, GroupState.wanting_crate_group)
 async def set_group(message: types.Message, state: FSMContext):
-    group_name = message.text.strip()
-    is_valid, msg = validate_group.val_gr_n(group_name)
-    
-    if not is_valid:
-        await message.answer(msg)
+    group_name = message.text.strip().upper()
+    groups_list = await get_gr_names.get_groups()
+
+    if group_name not in groups_list:
+        await message.answer("Такой группы не существует. Пожалуйста, проверьте правильность ввода.")
         return
     
-    if await set_user_group(message.from_user.id, group_name):
-        await state.clear()
-        await message.answer("Группа успешно установлена!")
-    else:
-        await message.answer("Ошибка сохранения. Попробуйте позже.")
+    elif group_name in groups_list:
+        if await set_user_group(message.from_user.id, group_name):
+            await state.clear()
+            await message.answer("Группа успешно установлена!")
+        else:
+            await message.answer("Ошибка сохранения. Попробуйте позже.")
 
 
 @router.callback_query(F.data == "dont_want_add_group")
@@ -107,19 +104,21 @@ async def watch_schedule_edit_by_btn(callback: types.CallbackQuery, state: FSMCo
 
 @router.message(F.text, EditingGroup.waiting_new_group)
 async def edit_schedule(message: types.Message, state: FSMContext):
-    new_group = message.text.strip()
-
-    is_valid, msg = validate_group.val_gr_n(new_group)
-    if not is_valid:
-        await message.answer(msg)
+    new_group = message.text.strip().upper()
+    group_list = await get_gr_names.get_groups()
+    
+    if new_group not in group_list:
+        await message.answer("Такой группы не существует. Пожалуйста, проверьте правильность ввода.")
         return
-
-    if await set_user_group(tg_id=message.from_user.id, group_name=new_group):
-        await state.clear()
-        await message.answer(
-            f"Успешно! Новая группа - <b>{new_group}</b>",
-            parse_mode="HTML",
-            reply_markup=keyboards.watch_schedule_edit_group_kb()
-        )
-    else:
-        await message.answer("Ошибка сохранения. Попробуйте позже.")
+    
+    elif new_group in group_list:
+    
+        if await set_user_group(tg_id=message.from_user.id, group_name=new_group):
+            await state.clear()
+            await message.answer(
+                f"Успешно! Новая группа - <b>{new_group}</b>",
+                parse_mode="HTML",
+                reply_markup=keyboards.watch_schedule_edit_group_kb()
+            )
+        else:
+            await message.answer("Ошибка сохранения. Попробуйте позже.")
