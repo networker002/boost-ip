@@ -28,7 +28,11 @@ async def cmd_start(message: types.Message, command: CommandObject = None):
     ))
     
     try:
-        await message.react([types.ReactionTypeEmoji(emoji="🏆")])
+        try:
+            message.react("🏆")
+        except:
+            message.react([types.ReactionTypeEmoji(emoji="🏆")])
+            
     except AttributeError:
         pass
 
