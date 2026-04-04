@@ -17,7 +17,7 @@ async def cmd_show_commands(message: types.Message):
     commands_list = "\n".join(get())
     text = f'''<a href="https://telegra.ph/BoostBot--Commands-02-22">BoostBot | Commands</a>
     Вот список команд, <b>который только пополняется!</b>
--{commands_list}'''
+{commands_list}'''
 
     await message.answer(text, parse_mode="HTML")
 

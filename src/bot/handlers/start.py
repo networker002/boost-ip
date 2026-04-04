@@ -29,9 +29,9 @@ async def cmd_start(message: types.Message, command: CommandObject = None):
     
     try:
         try:
-            message.react("🏆")
+            await message.react("🏆")
         except:
-            message.react([types.ReactionTypeEmoji(emoji="🏆")])
+            await message.react([types.ReactionTypeEmoji(emoji="🏆")])
             
     except AttributeError:
         pass
@@ -87,17 +87,18 @@ async def cmd_start(message: types.Message, command: CommandObject = None):
                         return
                     elif added:
                         await message.answer(f"Привет! Группа <b>{decoded_str.upper()}</b> успешно установлена!", parse_mode="HTML", reply_markup=builder.as_markup())
+                        
                     
             except Exception as e:
                 print(e)
                 await message.answer(f"Произошла ошибка при обработке ссылки. Пожалуйста, попробуйте снова позже.", parse_mode="HTML")
-
-    await message.answer(
-        text=welcome_text,
-        message_effect_id=effect_id,
-        reply_markup=kb,
-        parse_mode="HTML"
-    )
+    else:
+        await message.answer(
+            text=welcome_text,
+            message_effect_id=effect_id,
+            reply_markup=kb,
+            parse_mode="HTML"
+        )
     # print(1)
     # print(message.from_user.id)
     # print(d)
