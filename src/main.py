@@ -5,8 +5,11 @@ from aiogram import Bot, Dispatcher
 from bot.handlers import start, show_c, conv, schedule, set_group, profile, inline
 from utils.anti_flood import AntiFloodMiddleware
 import threading
-
-from utils.utils import InitDataValidationError, validate_telegram_init_data
+import hmac
+import json
+import time
+from hashlib import sha256
+from urllib.parse import parse_qsl
 
 load_dotenv()
 BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
@@ -64,6 +67,89 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+class InitDataValidationError(Exception):
+    pass
+
+
+def validate_telegram_init_data(
+    init_data_raw: str,
+    bot_token: str,
+    max_age_seconds: int = 300,
+) -> dict:
+    """
+    Валидирует Telegram Mini App initData.
+
+    :param init_data_raw: сырой window.Telegram.WebApp.initData
+    :param bot_token: токен бота
+    :param max_age_seconds: максимальный возраст auth_date в секундах
+    :return: dict с распарсенными полями
+    :raises InitDataValidationError: если данные невалидны
+    """
+    if not init_data_raw:
+        raise InitDataValidationError("initData is empty")
+
+    pairs = dict(parse_qsl(init_data_raw, keep_blank_values=True))
+
+    received_hash = pairs.pop("hash", None)
+    if not received_hash:
+        raise InitDataValidationError("hash is missing")
+
+    auth_date_raw = pairs.get("auth_date")
+    if not auth_date_raw:
+        raise InitDataValidationError("auth_date is missing")
+
+    try:
+        auth_date = int(auth_date_raw)
+    except ValueError as e:
+        raise InitDataValidationError("auth_date is invalid") from e
+
+    now = int(time.time())
+    if max_age_seconds > 0 and now - auth_date > max_age_seconds:
+        raise InitDataValidationError("initData is expired")
+
+    data_check_string = "\n".join(
+        f"{key}={value}"
+        for key, value in sorted(pairs.items(), key=lambda item: item[0])
+    )
+
+    secret_key = hmac.new(
+        key=b"WebAppData",
+        msg=bot_token.encode(),
+        digestmod=sha256,
+    ).digest()
+
+    calculated_hash = hmac.new(
+        key=secret_key,
+        msg=data_check_string.encode(),
+        digestmod=sha256,
+    ).hexdigest()
+
+    if not hmac.compare_digest(calculated_hash, received_hash):
+        raise InitDataValidationError("hash is invalid")
+
+    if "user" in pairs:
+        try:
+            pairs["user"] = json.loads(pairs["user"])
+        except json.JSONDecodeError as e:
+            raise InitDataValidationError("user is not valid JSON") from e
+
+    if "receiver" in pairs:
+        try:
+            pairs["receiver"] = json.loads(pairs["receiver"])
+        except json.JSONDecodeError as e:
+            raise InitDataValidationError("receiver is not valid JSON") from e
+
+    if "chat" in pairs:
+        try:
+            pairs["chat"] = json.loads(pairs["chat"])
+        except json.JSONDecodeError as e:
+            raise InitDataValidationError("chat is not valid JSON") from e
+
+    pairs["auth_date"] = auth_date
+    return pairs
+
 
 def authorize(raw_data: str):
     try:
