@@ -181,14 +181,13 @@ async def get_group(request: fastapi.Request):
         return data
 
 
-@app.get("/schedule/{group}")
-def get_schedule(request: fastapi.Request, group: str):
+@app.get("/schedule")
+def get_schedule(request: fastapi.Request):
     auth_data, auth_err = authorize(request.headers.get("Authorization"))
     if auth_err is not None:
         return fastapi.Response({"error": auth_err}, 401)
 
-    if user_group.check_user_group(auth_data["user"]["id"]) != group:
-        return fastapi.Response("Forbidden", 403)
+    group = user_group.check_user_group(auth_data["user"]["id"])
 
     resp = sch.Schedule(group_name=group).run_()
     codes = {}
