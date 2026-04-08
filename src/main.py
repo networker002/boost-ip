@@ -132,19 +132,19 @@ def validate_telegram_init_data(
         try:
             pairs["user"] = json.loads(pairs["user"])
         except json.JSONDecodeError as e:
-            raise InitDataValidationError("user is not valid JSON") from e
+            raise InitDataValidationError("user is not valid") from e
 
     if "receiver" in pairs:
         try:
             pairs["receiver"] = json.loads(pairs["receiver"])
         except json.JSONDecodeError as e:
-            raise InitDataValidationError("receiver is not valid JSON") from e
+            raise InitDataValidationError("receiver is not valid") from e
 
     if "chat" in pairs:
         try:
             pairs["chat"] = json.loads(pairs["chat"])
         except json.JSONDecodeError as e:
-            raise InitDataValidationError("chat is not valid JSON") from e
+            raise InitDataValidationError("chat is not valid") from e
 
     pairs["auth_date"] = auth_date
     return pairs
@@ -152,7 +152,7 @@ def validate_telegram_init_data(
 
 async def authorize(raw_data: str):
     try:
-        validated_data = validate_telegram_init_data(raw_data, os.environ.get("TELEGRAM_BOT_TOKEN"))
+        validated_data = validate_telegram_init_data(raw_data, os.environ.get("TELEGRAM_BOT_TOKEN"), 1800)
     except InitDataValidationError as e:
         return None, "Init data validation error: " + e.args[0]
 
