@@ -213,7 +213,7 @@ async def get_schedule(request: fastapi.Request):
     if not days_data:
         return "Пока что пусто"
 
-    string = "Пока что пусто"
+    string = ""
     for day, contents in days_data.items():
         for content in contents:
             if not content:
@@ -230,7 +230,7 @@ async def get_schedule(request: fastapi.Request):
                 string += f"<h3 class='teacher'>{lesson['teacher']}</h3>"
             string += "</div>"
 
-    return string
+    return string or "Пока что пусто"
 
 
 def run_api():
