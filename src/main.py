@@ -150,7 +150,7 @@ def validate_telegram_init_data(
     return pairs
 
 
-def authorize(raw_data: str):
+async def authorize(raw_data: str):
     print(raw_data)
     try:
         validated_data = validate_telegram_init_data(raw_data, os.environ.get("TELEGRAM_BOT_TOKEN"))
@@ -160,7 +160,7 @@ def authorize(raw_data: str):
     if "user" not in validated_data.keys():
         return None, "No user object in init data"
 
-    user_group.auto_add(validated_data["user"]["id"])
+    await user_group.auto_add(validated_data["user"]["id"])
 
     return validated_data, None
 
@@ -172,7 +172,7 @@ def f():
 
 @app.get("/group")
 async def get_group(request: fastapi.Request):
-    auth_data, auth_err = authorize(request.headers.get("Authorization"))
+    auth_data, auth_err = await authorize(request.headers.get("Authorization"))
     if auth_err is not None:
         return fastapi.Response(json.dumps({"error": auth_err}), 401)
 
@@ -182,12 +182,15 @@ async def get_group(request: fastapi.Request):
 
 
 @app.get("/schedule")
-def get_schedule(request: fastapi.Request):
-    auth_data, auth_err = authorize(request.headers.get("Authorization"))
+async def get_schedule(request: fastapi.Request):
+    auth_data, auth_err = await authorize(request.headers.get("Authorization"))
     if auth_err is not None:
         return fastapi.Response(json.dumps({"error": auth_err}), 401)
 
-    group = user_group.check_user_group(auth_data["user"]["id"])
+    try:
+        group = (await user_group.check_user_group(auth_data["user"]["id"]))["group_name"]
+    except:
+        return "Пока что пусто"
 
     resp = sch.Schedule(group_name=group).run_()
     codes = {}
