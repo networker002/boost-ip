@@ -56,7 +56,6 @@ import threading
 from services.db import user_group
 from fastapi.middleware.cors import CORSMiddleware
 
-
 app = fastapi.FastAPI()
 
 
@@ -155,8 +154,8 @@ def authorize(raw_data: str):
     print(raw_data)
     try:
         validated_data = validate_telegram_init_data(raw_data, os.environ.get("TELEGRAM_BOT_TOKEN"))
-    except InitDataValidationError:
-        return None, "Init data is not valid"
+    except InitDataValidationError as e:
+        return None, "Init data validation error: " + e.args[0]
 
     if "user" not in validated_data.keys():
         return None, "No user object in init data"
