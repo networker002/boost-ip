@@ -23,7 +23,6 @@ async def auto_add(tg_id: int):
         add = await async_execute_supabase_call(
             lambda: supabase.table("user_groups").insert({"tg_id": tg_id}).execute()
         )
-    return True
 
 async def set_user_group(tg_id: int, group_name: str) -> bool:
     try:

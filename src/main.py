@@ -6,6 +6,8 @@ from bot.handlers import start, show_c, conv, schedule, set_group, profile, inli
 from utils.anti_flood import AntiFloodMiddleware
 import threading
 
+from utils.utils import InitDataValidationError, validate_telegram_init_data
+
 load_dotenv()
 BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
 
@@ -43,6 +45,7 @@ async def start_bot():
 
 import fastapi
 from services.db import schedule as sch
+from services.db import user_group
 from pathlib import Path
 import json
 import uvicorn
@@ -62,20 +65,45 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+def authorize(raw_data: str):
+    try:
+        validated_data = validate_telegram_init_data(raw_data, os.environ.get("TELEGRAM_BOT_TOKEN"))
+    except InitDataValidationError:
+        return None, "Init data is not valid"
+
+    if "user" not in validated_data.keys():
+        return None, "No user object in init data"
+
+    user_group.auto_add(validated_data["user"]["id"])
+
+    return validated_data, None
+
+
 @app.get("/")
 def f():
     return {"status": 200}
 
 
-@app.get("/group/{tg_id}")
-async def get_group(tg_id: int):
-    data = await user_group.check_user_group(tg_id)
+@app.get("/group")
+async def get_group(request: fastapi.Request):
+    auth_data, auth_err = authorize(request.headers.get("Authorization"))
+    if auth_err is not None:
+        return fastapi.Response({"error": auth_err}, 401)
+
+    data = await user_group.check_user_group(auth_data["user"]["id"])
     if data:
         return data
-    
-    
+
+
 @app.get("/schedule/{group}")
-def get_schedule(group: str):
+def get_schedule(request: fastapi.Request, group: str):
+    auth_data, auth_err = authorize(request.headers.get("Authorization"))
+    if auth_err is not None:
+        return fastapi.Response({"error": auth_err}, 401)
+
+    if user_group.check_user_group(auth_data["user"]["id"]) != group:
+        return fastapi.Response("Forbidden", 403)
+
     resp = sch.Schedule(group_name=group).run_()
     codes = {}
     try:
@@ -92,12 +120,12 @@ def get_schedule(group: str):
         print("example-time.json not found :(")
     if not resp:
         return "Пока что пусто"
-    
+
     week_name, days_data = resp
     if not days_data:
         return "Пока что пусто"
-    
-    string = """"""
+
+    string = "Пока что пусто"
     for day, contents in days_data.items():
         for content in contents:
             if not content:
@@ -113,10 +141,9 @@ def get_schedule(group: str):
                 string += f"<span class='subject'>{lesson['subject']}</span> <span class='room'>({lesson["room"]})</span>"
                 string += f"<h3 class='teacher'>{lesson['teacher']}</h3>"
             string += "</div>"
-    if not string:
-        return "Пока что пусто"
-    
+
     return string
+
 
 def run_api():
     # uvicorn.run(app, host="https://boost.rorosin.ru", port=443)
