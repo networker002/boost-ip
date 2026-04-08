@@ -174,7 +174,7 @@ def f():
 async def get_group(request: fastapi.Request):
     auth_data, auth_err = authorize(request.headers.get("Authorization"))
     if auth_err is not None:
-        return fastapi.Response(json.dump({"error": auth_err}), 401)
+        return fastapi.Response(json.dumps({"error": auth_err}), 401)
 
     data = await user_group.check_user_group(auth_data["user"]["id"])
     if data:
@@ -185,7 +185,7 @@ async def get_group(request: fastapi.Request):
 def get_schedule(request: fastapi.Request):
     auth_data, auth_err = authorize(request.headers.get("Authorization"))
     if auth_err is not None:
-        return fastapi.Response(json.dump({"error": auth_err}), 401)
+        return fastapi.Response(json.dumps({"error": auth_err}), 401)
 
     group = user_group.check_user_group(auth_data["user"]["id"])
 
