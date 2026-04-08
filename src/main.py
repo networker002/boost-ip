@@ -151,7 +151,6 @@ def validate_telegram_init_data(
 
 
 async def authorize(raw_data: str):
-    print(raw_data)
     try:
         validated_data = validate_telegram_init_data(raw_data, os.environ.get("TELEGRAM_BOT_TOKEN"))
     except InitDataValidationError as e:
