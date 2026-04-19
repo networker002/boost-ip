@@ -2,6 +2,8 @@ import asyncio
 import os
 from dotenv import load_dotenv
 from aiogram import Bot, Dispatcher
+from aiogram.client.session.aiohttp import AiohttpSession
+from aiogram.client.telegram import TelegramAPIServer
 from bot.handlers import start, show_c, conv, schedule, set_group, profile, inline
 from utils.anti_flood import AntiFloodMiddleware
 import threading
@@ -12,9 +14,14 @@ from hashlib import sha256
 from urllib.parse import parse_qsl
 
 load_dotenv()
+BOT_API_URL = os.getenv("TELEGRAM_BOT_API_URL")
 BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
 
-bot = Bot(token=BOT_TOKEN)
+if BOT_API_URL is not None:
+    session = AiohttpSession(api=TelegramAPIServer.from_base(BOT_API_URL))
+    bot = Bot(token=BOT_TOKEN, session=session)
+else:
+    bot = Bot(token=BOT_TOKEN)
 dp = Dispatcher()
 
 # add here
