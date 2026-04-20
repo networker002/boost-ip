@@ -205,7 +205,7 @@ async def telegram_webhook(request, x_telegram_bot_api_secret_token=fastapi.Head
 
     data = request.json()
     update = Update.model_validate(data, context={"bot": bot})
-    await = dp.feed_update(bot, update)
+    await dp.feed_update(bot, update)
     return {"ok": True}
 
 
