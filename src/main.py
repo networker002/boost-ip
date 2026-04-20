@@ -1,8 +1,10 @@
 import asyncio
 import os
+from contextlib import asynccontextmanager
 from dotenv import load_dotenv
 from aiohttp import ClientTimeout
-from aiogram import Bot, Dispatcher
+from aiogram import Bot, Dispatcher, Router
+from aiogram.types import Update
 from aiogram.client.session.aiohttp import AiohttpSession
 from aiogram.client.telegram import TelegramAPIServer
 from bot.handlers import start, show_c, conv, schedule, set_group, profile, inline
@@ -17,13 +19,18 @@ from urllib.parse import parse_qsl
 load_dotenv()
 BOT_API_URL = os.getenv("TELEGRAM_BOT_API_URL")
 BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
+WEBHOOK_BASE_URL = os.getenv("TELEGRAM_WEBHOOK_BASE_URL")
+WEBHOOK_SECRET = os.getenv("TELEGRAM_WEBHOOK_SECRET")
 
 if BOT_API_URL is not None:
     session = AiohttpSession(api=TelegramAPIServer.from_base(BOT_API_URL, is_local=True), timeout=ClientTimeout(total=60))
     bot = Bot(token=BOT_TOKEN, session=session)
 else:
     bot = Bot(token=BOT_TOKEN)
+
+router = Router()
 dp = Dispatcher()
+dp.include_router(router)
 
 # add here
 dp.include_router(start.router)
@@ -64,7 +71,20 @@ import threading
 from services.db import user_group
 from fastapi.middleware.cors import CORSMiddleware
 
-app = fastapi.FastAPI()
+
+@asynccontextmanager
+async def lifespan(app):
+    await bot.setWebhook(
+        url=WEBHOOK_BASE_URL,
+        secret_token=WEBHOOK_SECRET,
+        allowed_updates=dp.resolve_used_update_types(),
+        drop_pending_updates=True
+    )
+    yield
+    await bot.delete_webhook()
+    await bot.session.close()
+
+app = fastapi.FastAPI(lifespan=lifespan)
 
 
 app.add_middleware(
@@ -175,6 +195,17 @@ async def authorize(raw_data: str):
 @app.get("/")
 def f():
     return {"status": 200}
+
+
+@app.post(WEBHOOK_BASE_URL)
+async def telegram_webhook(request, x_telegram_bot_api_secret_token=fastapi.Header(default=None)):
+    if WEBHOOK_SECRET and x_telegram_bot_api_secret_token != WEBHOOK_SECRET:
+        raise fastapi.HTTPException(status_code=401, detail="Invalid secret token")
+
+    data = request.json()
+    update = Update.model_validate(data, context={"bot": bot})
+    await = dp.feed_update(bot, update)
+    return {"ok": True}
 
 
 @app.get("/group")
