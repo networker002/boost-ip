@@ -48,9 +48,9 @@ dp.include_router(inline.router)
 # if __name__ == "__main__":
 #     asyncio.run(main())
 
-async def start_bot():
-    dp.update.outer_middleware(AntiFloodMiddleware(default_rate=1.5))
-    await dp.start_polling(bot)
+# async def start_bot():
+#     dp.update.outer_middleware(AntiFloodMiddleware(default_rate=1.5))
+#     await dp.start_polling(bot)
 
 # app = Flask(__name__)
 
@@ -73,8 +73,8 @@ from services.db import user_group
 from fastapi.middleware.cors import CORSMiddleware
 
 
-@asynccontextmanager
 async def lifespan(app):
+    dp.update.outer_middleware(AntiFloodMiddleware(default_rate=1.5))
     await bot.set_webhook(
         url=f"{WEBHOOK_HOST}{WEBHOOK_PATH}",
         secret_token=WEBHOOK_SECRET,
