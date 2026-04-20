@@ -281,4 +281,4 @@ if __name__ == "__main__":
     # http_thread.start()
     api_thread = threading.Thread(target=run_api, daemon=True)
     api_thread.start()
-    asyncio.run(start_bot())
+    # asyncio.run(start_bot())
