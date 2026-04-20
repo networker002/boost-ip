@@ -73,15 +73,22 @@ from fastapi.middleware.cors import CORSMiddleware
 
 async def lifespan(app):
     # dp.update.outer_middleware(AntiFloodMiddleware(default_rate=1.5))
-    await bot.set_webhook(
+    print("hello from main.py:76")
+    print(f"setting up webhook to {WEBHOOK_HOST}{WEBHOOK_PATH} with secret {WEBHOOK_SECRET}")
+    print(await bot.set_webhook(
         url=f"{WEBHOOK_HOST}{WEBHOOK_PATH}",
         secret_token=WEBHOOK_SECRET,
         allowed_updates=dp.resolve_used_update_types(),
         drop_pending_updates=True
-    )
+    ))
+    print("webhook set up DONE")
     yield
+    print("deleting webhook")
     await bot.delete_webhook()
+    print("webhook delete DONE")
+    print("closing session")
     await bot.session.close()
+    print("BYE BYE!")
 
 app = fastapi.FastAPI(lifespan=lifespan)
 
