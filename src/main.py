@@ -19,7 +19,7 @@ from urllib.parse import parse_qsl
 load_dotenv()
 BOT_API_URL = os.getenv("TELEGRAM_BOT_API_URL")
 BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
-WEBHOOK_HOST = os.getenv("TELEGRAM_WEBHOOK_HOST") or os.getenv("SERVICE_URL_BOT")
+WEBHOOK_HOST = os.getenv("TELEGRAM_WEBHOOK_HOST")
 WEBHOOK_PATH = os.getenv("TELEGRAM_WEBHOOK_PATH")
 WEBHOOK_SECRET = os.getenv("TELEGRAM_WEBHOOK_SECRET")
 
@@ -277,13 +277,5 @@ async def get_schedule(request: fastapi.Request):
     return string or "Пока что пусто"
 
 
-def run_api():
-    # uvicorn.run(app, host="https://boost.rorosin.ru", port=443)
-    uvicorn.run(app, host="0.0.0.0", port=8000)
-
 if __name__ == "__main__":
-    # http_thread = threading.Thread(target=run_http_server, daemon=True)
-    # http_thread.start()
-    api_thread = threading.Thread(target=run_api, daemon=True)
-    api_thread.start()
-    # asyncio.run(start_bot())
+    uvicorn.run(app, host="0.0.0.0", port=8000)
