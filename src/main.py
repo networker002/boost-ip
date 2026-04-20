@@ -75,7 +75,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 @asynccontextmanager
 async def lifespan(app):
-    await bot.setWebhook(
+    await bot.set_webhook(
         url=WEBHOOK_BASE_URL,
         secret_token=WEBHOOK_SECRET,
         allowed_updates=dp.resolve_used_update_types(),
