@@ -5,12 +5,12 @@ from typing import *
 try:
     tz = ZoneInfo("Europe/Moscow")
     now = datetime.datetime.now(tz=tz)
-    start = datetime.datetime(2026, 3, 31, tzinfo=tz)
+    start = datetime.datetime(2026, 3, 29, tzinfo=tz)
 except Exception as e:
     print(f"TZ Error: {e}")
     tz = None
     now = datetime.datetime.now()
-    start = datetime.datetime(now.year, 3, 31)
+    start = datetime.datetime(now.year, 3, 29)
 
 mapping = {
     0: "1 числитель",
