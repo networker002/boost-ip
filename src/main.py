@@ -29,9 +29,7 @@ if BOT_API_URL is not None:
 else:
     bot = Bot(token=BOT_TOKEN)
 
-router = Router()
 dp = Dispatcher()
-dp.include_router(router)
 
 # add here
 dp.include_router(start.router)
@@ -74,7 +72,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 
 async def lifespan(app):
-    dp.update.outer_middleware(AntiFloodMiddleware(default_rate=1.5))
+    # dp.update.outer_middleware(AntiFloodMiddleware(default_rate=1.5))
     await bot.set_webhook(
         url=f"{WEBHOOK_HOST}{WEBHOOK_PATH}",
         secret_token=WEBHOOK_SECRET,
