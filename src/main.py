@@ -19,7 +19,8 @@ from urllib.parse import parse_qsl
 load_dotenv()
 BOT_API_URL = os.getenv("TELEGRAM_BOT_API_URL")
 BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
-WEBHOOK_BASE_URL = os.getenv("TELEGRAM_WEBHOOK_BASE_URL")
+WEBHOOK_HOST = os.getenv("TELEGRAM_WEBHOOK_HOST") or os.getenv("SERVICE_URL_BOT")
+WEBHOOK_PATH = os.getenv("TELEGRAM_WEBHOOK_PATH")
 WEBHOOK_SECRET = os.getenv("TELEGRAM_WEBHOOK_SECRET")
 
 if BOT_API_URL is not None:
@@ -197,7 +198,7 @@ def f():
     return {"status": 200}
 
 
-@app.post(WEBHOOK_BASE_URL)
+@app.post(WEBHOOK_PATH)
 async def telegram_webhook(request, x_telegram_bot_api_secret_token=fastapi.Header(default=None)):
     if WEBHOOK_SECRET and x_telegram_bot_api_secret_token != WEBHOOK_SECRET:
         raise fastapi.HTTPException(status_code=401, detail="Invalid secret token")
