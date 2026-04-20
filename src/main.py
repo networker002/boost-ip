@@ -1,6 +1,7 @@
 import asyncio
 import os
 from dotenv import load_dotenv
+from aiohttp import ClientTimeout
 from aiogram import Bot, Dispatcher
 from aiogram.client.session.aiohttp import AiohttpSession
 from aiogram.client.telegram import TelegramAPIServer
@@ -18,7 +19,7 @@ BOT_API_URL = os.getenv("TELEGRAM_BOT_API_URL")
 BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
 
 if BOT_API_URL is not None:
-    session = AiohttpSession(api=TelegramAPIServer.from_base(BOT_API_URL, is_local=True))
+    session = AiohttpSession(api=TelegramAPIServer.from_base(BOT_API_URL, is_local=True), timeout=ClientTimeout(total=60))
     bot = Bot(token=BOT_TOKEN, session=session)
 else:
     bot = Bot(token=BOT_TOKEN)
