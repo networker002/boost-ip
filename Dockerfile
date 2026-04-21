@@ -1,5 +1,7 @@
 FROM python:3.12-slim
 
+RUN apk add --no-cache curl
+
 WORKDIR /app
 
 COPY requirements.txt .
