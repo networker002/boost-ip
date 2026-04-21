@@ -59,9 +59,6 @@ async def lifespan(app: fastapi.FastAPI):
 
     dp.update.outer_middleware(AntiFloodMiddleware(default_rate=1.5))
 
-    print(f"BOT_API_URL = {BOT_API_URL!r}")
-    print(f"BOT_TOKEN = {BOT_TOKEN[:10]!r}...")
-
     await bot.set_webhook(
         url=f"{WEBHOOK_HOST}{WEBHOOK_PATH}",
         secret_token=WEBHOOK_SECRET,
