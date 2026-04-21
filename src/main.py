@@ -74,12 +74,12 @@ from fastapi.middleware.cors import CORSMiddleware
 async def lifespan(app):
     # dp.update.outer_middleware(AntiFloodMiddleware(default_rate=1.5))
     # print(f"setting up webhook to {WEBHOOK_HOST}{WEBHOOK_PATH} with secret {WEBHOOK_SECRET}")
-    # print(await bot.set_webhook(
-    #     url=f"{WEBHOOK_HOST}{WEBHOOK_PATH}",
-    #     secret_token=WEBHOOK_SECRET,
-    #     allowed_updates=dp.resolve_used_update_types(),
-    #     drop_pending_updates=True
-    # ))
+    print(await bot.set_webhook(
+        url=f"{WEBHOOK_HOST}{WEBHOOK_PATH}",
+        secret_token=WEBHOOK_SECRET,
+        allowed_updates=dp.resolve_used_update_types(),
+        drop_pending_updates=True
+    ))
     # print("webhook set up DONE")
     yield
     # print("deleting webhook")
@@ -206,6 +206,7 @@ def f():
 async def telegram_webhook(request: fastapi.Request, x_telegram_bot_api_secret_token=fastapi.Header(default=None)):
     print("have a new hook")
     if WEBHOOK_SECRET and x_telegram_bot_api_secret_token != WEBHOOK_SECRET:
+        print(f"{x_telegram_bot_api_secret_token} != {WEBHOOK_SECRET}, fuck you")
         raise fastapi.HTTPException(status_code=401, detail="Invalid secret token")
 
     print(await request.body())
