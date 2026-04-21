@@ -2,7 +2,6 @@ import asyncio
 import os
 from contextlib import asynccontextmanager
 from dotenv import load_dotenv
-from aiohttp import ClientTimeout
 from aiogram import Bot, Dispatcher, Router
 from aiogram.types import Update
 from aiogram.client.session.aiohttp import AiohttpSession
@@ -24,7 +23,7 @@ WEBHOOK_PATH = os.getenv("TELEGRAM_WEBHOOK_PATH")
 WEBHOOK_SECRET = os.getenv("TELEGRAM_WEBHOOK_SECRET")
 
 if BOT_API_URL is not None:
-    session = AiohttpSession(api=TelegramAPIServer.from_base(BOT_API_URL, is_local=True), timeout=ClientTimeout(total=60))
+    session = AiohttpSession(api=TelegramAPIServer.from_base(BOT_API_URL, is_local=True), timeout=60)
     bot = Bot(token=BOT_TOKEN, session=session)
 else:
     bot = Bot(token=BOT_TOKEN)
