@@ -6,6 +6,7 @@ from aiogram import Bot, Dispatcher, Router
 from aiogram.types import Update
 from aiogram.client.session.aiohttp import AiohttpSession
 from aiogram.client.telegram import TelegramAPIServer
+from pydantic import ValidationError
 from bot.handlers import start, show_c, conv, schedule, set_group, profile, inline
 from utils.anti_flood import AntiFloodMiddleware
 import threading
@@ -72,7 +73,6 @@ from fastapi.middleware.cors import CORSMiddleware
 
 async def lifespan(app):
     # dp.update.outer_middleware(AntiFloodMiddleware(default_rate=1.5))
-    print("hello from main.py:76")
     # print(f"setting up webhook to {WEBHOOK_HOST}{WEBHOOK_PATH} with secret {WEBHOOK_SECRET}")
     # print(await bot.set_webhook(
     #     url=f"{WEBHOOK_HOST}{WEBHOOK_PATH}",
@@ -208,7 +208,11 @@ async def telegram_webhook(request, x_telegram_bot_api_secret_token=fastapi.Head
         raise fastapi.HTTPException(status_code=401, detail="Invalid secret token")
 
     data = request.json()
-    update = Update.model_validate(data, context={"bot": bot})
+    print(data)
+    try:
+        update = Update.model_validate(data, context={"bot": bot})
+    except ValidationError as e:
+        print(e)
     await dp.feed_update(bot, update)
     return {"ok": True}
 
