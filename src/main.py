@@ -2,10 +2,12 @@ import asyncio
 import os
 from contextlib import asynccontextmanager
 from dotenv import load_dotenv
+from aiohttp import ClientTimeout
 from aiogram import Bot, Dispatcher, Router
 from aiogram.types import Update
 from aiogram.client.session.aiohttp import AiohttpSession
 from aiogram.client.telegram import TelegramAPIServer
+from aiogram.webhook.aiohttp_server import SimpleRequestHandler
 from pydantic import ValidationError
 from bot.handlers import start, show_c, conv, schedule, set_group, profile, inline
 from utils.anti_flood import AntiFloodMiddleware
@@ -23,16 +25,8 @@ WEBHOOK_HOST = os.getenv("TELEGRAM_WEBHOOK_HOST")
 WEBHOOK_PATH = os.getenv("TELEGRAM_WEBHOOK_PATH")
 WEBHOOK_SECRET = os.getenv("TELEGRAM_WEBHOOK_SECRET")
 
-if BOT_API_URL is not None:
-    connector = aiohttp.TCPConnector(limit=10, force_close=True)
-    session = AiohttpSession(api=TelegramAPIServer.from_base(BOT_API_URL, is_local=True), timeout=60, connector=connector)
-    bot = Bot(token=BOT_TOKEN, session=session)
-else:
-    bot = Bot(token=BOT_TOKEN)
-
 dp = Dispatcher()
 
-# add here
 dp.include_router(start.router)
 dp.include_router(show_c.router)
 dp.include_router(conv.router)
@@ -40,26 +34,6 @@ dp.include_router(set_group.router)
 dp.include_router(schedule.router)
 dp.include_router(profile.router)
 dp.include_router(inline.router)
-
-# async def main():
-#     await dp.start_polling(bot)
-
-# if __name__ == "__main__":
-#     asyncio.run(main())
-
-# async def start_bot():
-#     dp.update.outer_middleware(AntiFloodMiddleware(default_rate=1.5))
-#     await dp.start_polling(bot)
-
-# app = Flask(__name__)
-
-# @app.route("/health")
-# def health_check():
-#     return "OK", 200
-
-# def run_http_server():
-#     port = int(os.environ.get("PORT", 10000))
-#     app.run(host="0.0.0.0", port=port)
 
 import fastapi
 from services.db import schedule as sch
@@ -72,23 +46,33 @@ from services.db import user_group
 from fastapi.middleware.cors import CORSMiddleware
 
 
-async def lifespan(app):
-    # dp.update.outer_middleware(AntiFloodMiddleware(default_rate=1.5))
-    # print(f"setting up webhook to {WEBHOOK_HOST}{WEBHOOK_PATH} with secret {WEBHOOK_SECRET}")
-    # print(await bot.set_webhook(
-    #     url=f"{WEBHOOK_HOST}{WEBHOOK_PATH}",
-    #     secret_token=WEBHOOK_SECRET,
-    #     allowed_updates=dp.resolve_used_update_types(),
-    #     drop_pending_updates=True
-    # ))
-    # print("webhook set up DONE")
+@asynccontextmanager
+async def lifespan(app: fastapi.FastAPI):
+    if BOT_API_URL:
+        session = AiohttpSession(
+            api=TelegramAPIServer.from_base(BOT_API_URL, is_local=True),
+            timeout=ClientTimeout(total=60)
+        )
+        bot = Bot(token=BOT_TOKEN, session=session)
+    else:
+        bot = Bot(token=BOT_TOKEN)
+
+    dp.update.outer_middleware(AntiFloodMiddleware(default_rate=1.5))
+
+    await bot.set_webhook(
+        url=f"{WEBHOOK_HOST}{WEBHOOK_PATH}",
+        secret_token=WEBHOOK_SECRET,
+        drop_pending_updates=True,
+    )
+
+    app.state.bot = bot
+    app.state.dp = dp
+
     yield
-    # print("deleting webhook")
-    # await bot.delete_webhook()
-    # print("webhook delete DONE")
-    print("closing session")
-    await bot.session.close()
-    print("BYE BYE!")
+
+    await bot.delete_webhook()
+    await session.close()
+
 
 app = fastapi.FastAPI(lifespan=lifespan)
 
@@ -204,20 +188,13 @@ def f():
 
 
 @app.post(WEBHOOK_PATH)
-async def telegram_webhook(request: fastapi.Request, x_telegram_bot_api_secret_token=fastapi.Header(default=None)):
-    print("have a new hook")
-    if WEBHOOK_SECRET and x_telegram_bot_api_secret_token != WEBHOOK_SECRET:
-        print(f"{x_telegram_bot_api_secret_token} != {WEBHOOK_SECRET}, fuck you")
-        raise fastapi.HTTPException(status_code=401, detail="Invalid secret token")
+async def telegram_webhook(request: fastapi.Request):
+    bot = request.app.state.bot
+    dp = request.app.state.dp
 
-    print(await request.body())
-    data = await request.json()
-    print(data)
-    try:
-        update = Update.model_validate(data, context={"bot": bot})
-    except ValidationError as e:
-        print(e)
-    await dp.feed_update(bot, update)
+    update = await request.json()
+    from aiogram.types import Update
+    await dp.feed_update(bot, Update(**update))
     return {"ok": True}
 
 
