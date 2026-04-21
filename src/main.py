@@ -24,7 +24,8 @@ WEBHOOK_PATH = os.getenv("TELEGRAM_WEBHOOK_PATH")
 WEBHOOK_SECRET = os.getenv("TELEGRAM_WEBHOOK_SECRET")
 
 if BOT_API_URL is not None:
-    session = AiohttpSession(api=TelegramAPIServer.from_base(BOT_API_URL, is_local=True), timeout=60)
+    connector = aiohttp.TCPConnector(limit=10, force_close=True)
+    session = AiohttpSession(api=TelegramAPIServer.from_base(BOT_API_URL, is_local=True), timeout=60, connector=connector)
     bot = Bot(token=BOT_TOKEN, session=session)
 else:
     bot = Bot(token=BOT_TOKEN)
