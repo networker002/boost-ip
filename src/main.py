@@ -203,11 +203,13 @@ def f():
 
 
 @app.post(WEBHOOK_PATH)
-async def telegram_webhook(request, x_telegram_bot_api_secret_token=fastapi.Header(default=None)):
+async def telegram_webhook(request: fastapi.Request, x_telegram_bot_api_secret_token=fastapi.Header(default=None)):
+    print("have a new hook")
     if WEBHOOK_SECRET and x_telegram_bot_api_secret_token != WEBHOOK_SECRET:
         raise fastapi.HTTPException(status_code=401, detail="Invalid secret token")
 
-    data = request.json()
+    print(await request.body())
+    data = await request.json()
     print(data)
     try:
         update = Update.model_validate(data, context={"bot": bot})
