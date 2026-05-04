@@ -71,7 +71,7 @@ async def lifespan(app: fastapi.FastAPI):
                 proxy_data = {**proxy_data, "username": TDLIGHT_PROXY_USERNAME}
             if TDLIGHT_PROXY_PASSWORD:
                 proxy_data = {**proxy_data, "password": TDLIGHT_PROXY_PASSWORD}
-            print(await add_proxy(TDLIGHT_PROXY_HOST, int(TDLIGHT_PROXY_PORT), TDLIGHT_PROXY_TYPE, proxy_data
+            print(await add_proxy(TDLIGHT_PROXY_HOST, int(TDLIGHT_PROXY_PORT), TDLIGHT_PROXY_TYPE, proxy_data))
 
         session = AiohttpSession(
             api=TelegramAPIServer.from_base(BOT_API_URL, is_local=True),
