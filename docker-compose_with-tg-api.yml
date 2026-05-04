@@ -1,8 +1,15 @@
 services:
+  proxy:
+    image: gogost/gost
+    command: -L=:12345 -F=${SOCKS5_PROXY}
+    networks:
+      - boost-ip
+
   api:
     image: docker.io/rorosin/tgbotapi:latest
     container_name: boost-ip-api
     restart: unless-stopped
+    depends_on: proxy
     env_file:
       - .env
     environment:
