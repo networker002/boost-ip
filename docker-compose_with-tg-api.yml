@@ -11,7 +11,7 @@ services:
       - /var/tmp/telegram-bot-api:size=256m,mode=1777
     command: ["/usr/local/bin/telegram-bot-api --local --http-port=${TELEGRAM_API_PORT} --dir=/var/lib/telegram-bot-api --temp-dir=/var/tmp/telegram-bot-api --verbosity=3 ${TELEGRAM_API_ARGS}"]
     healthcheck:
-      test: ["CMD", "sh", "-c", "wget -qO- http://localhost:8081/bot${TELEGRAM_BOT_TOKEN}/getMe"]
+      test: ["CMD", "sh", "-c", "wget -qO- http://localhost:${TELEGRAM_API_PORT}/bot${TELEGRAM_BOT_TOKEN}/getMe"]
       interval: 5s
       timeout: 3s
       retries: 5
