@@ -5,6 +5,7 @@ from aiohttp import ClientTimeout
 from aiogram import Bot, Dispatcher
 from aiogram.client.session.aiohttp import AiohttpSession
 from aiogram.client.telegram import TelegramAPIServer
+import aiohttp
 from bot.handlers import start, show_c, conv, schedule, set_group, profile, inline
 from utils.anti_flood import AntiFloodMiddleware
 import hmac
