@@ -38,9 +38,30 @@ from services.db import user_group
 from fastapi.middleware.cors import CORSMiddleware
 
 
+async def add_proxy(server, port, proxy_type, kvargs={}):
+    url = f"{BOT_API_URL}/bot{BOT_TOKEN}/addProxy"
+    payload = {
+        "server": server,
+        "port": port,
+        "type": proxy_type,
+        **kvargs
+    }
+
+    async with aiohttp.ClientSession() as session:
+        async with session.post(url, json=payload) as resp:
+            return await resp.json()
+
+
 @asynccontextmanager
 async def lifespan(app: fastapi.FastAPI):
     if BOT_API_URL:
+        TDLIGHT_PROXY_TYPE = os.getenv("TDLIGHT_PROXY_TYPE")
+        TDLIGHT_PROXY_HOST = os.getenv("TDLIGHT_PROXY_HOST")
+        TDLIGHT_PROXY_PORT = os.getenv("TDLIGHT_PROXY_PORT")
+        TDLIGHT_PROXY_SECRET = os.getenv("TDLIGHT_PROXY_SECRET")
+        if TDLIGHT_PROXY_TYPE and TDLIGHT_PROXY_HOST and TDLIGHT_PROXY_PORT and TDLIGHT_PROXY_SECRET:
+            add_proxy(TDLIGHT_PROXY_HOST, int(TDLIGHT_PROXY_PORT), TDLIGHT_PROXY_TYPE, {"secret": TDLIGHT_PROXY_SECRET})
+
         session = AiohttpSession(
             api=TelegramAPIServer.from_base(BOT_API_URL, is_local=True),
             timeout=ClientTimeout(total=60)
