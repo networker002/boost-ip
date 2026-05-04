@@ -1,19 +1,13 @@
-import asyncio
 import os
 from contextlib import asynccontextmanager
 from dotenv import load_dotenv
 from aiohttp import ClientTimeout
-from aiogram import Bot, Dispatcher, Router
-from aiogram.types import Update
+from aiogram import Bot, Dispatcher
 from aiogram.client.session.aiohttp import AiohttpSession
 from aiogram.client.telegram import TelegramAPIServer
-from aiogram.webhook.aiohttp_server import SimpleRequestHandler
-from pydantic import ValidationError
 from bot.handlers import start, show_c, conv, schedule, set_group, profile, inline
 from utils.anti_flood import AntiFloodMiddleware
-import threading
 import hmac
-import json
 import time
 from hashlib import sha256
 from urllib.parse import parse_qsl
@@ -37,11 +31,9 @@ dp.include_router(inline.router)
 
 import fastapi
 from services.db import schedule as sch
-from services.db import user_group
 from pathlib import Path
 import json
 import uvicorn
-import threading
 from services.db import user_group
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -123,7 +115,7 @@ def validate_telegram_init_data(
         raise InitDataValidationError("auth_date is invalid") from e
 
     now = int(time.time())
-    if max_age_seconds > 0 and now - auth_date > max_age_seconds:
+    if 0 < max_age_seconds < now - auth_date:
         raise InitDataValidationError("initData is expired")
 
     data_check_string = "\n".join(
@@ -164,7 +156,7 @@ def validate_telegram_init_data(
         except json.JSONDecodeError as e:
             raise InitDataValidationError("chat is not valid") from e
 
-    pairs["auth_date"] = auth_date
+    pairs["auth_date"] = str(auth_date)
     return pairs
 
 
