@@ -23,9 +23,7 @@ services:
     build: .
     container_name: boost-ip-bot
     restart: unless-stopped
-    depends_on:
-      api:
-        condition: service_healthy
+    depends_on: [api]
     env_file:
       - .env
     healthcheck:
