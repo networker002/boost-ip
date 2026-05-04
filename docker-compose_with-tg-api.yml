@@ -27,7 +27,7 @@ services:
     env_file:
       - .env
     healthcheck:
-      test: ["CMD", "wget", "-qO-", "http://localhost:8000/check"]
+      test: ["CMD", "wget", "-qO-", "http://localhost:8000/"]
       interval: 5s
       timeout: 3s
       retries: 5
