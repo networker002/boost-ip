@@ -1,0 +1,43 @@
+services:
+  api:
+    image: docker.io/rorosin/tgbotapi:latest
+    container_name: boost-ip-api
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      - TELEGRAM_API_PORT=8081
+    volumes:
+      - telegram_bot_api_data:/var/lib/telegram-bot-api
+    tmpfs:
+      - /var/tmp/telegram-bot-api:size=256m,mode=1777
+    healthcheck:
+      test: ["CMD", "sh", "-c", "wget -qO- http://localhost:8081/bot$TELEGRAM_BOT_TOKEN/getMe"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+      start_period: 10s
+    networks:
+      - boost-ip
+
+  bot:
+    build: .
+    container_name: boost-ip-bot
+    restart: unless-stopped
+    depends_on:
+      api:
+        condition: service_healthy
+    env_file:
+      - .env
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:8000/check"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+      start_period: 10s
+    networks:
+      - boost-ip
+
+networks:
+  boost-ip:
+    driver: bridge
