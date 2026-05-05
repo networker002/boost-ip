@@ -1,3 +1,4 @@
+import logging
 import os
 from contextlib import asynccontextmanager
 from dotenv import load_dotenv
@@ -98,6 +99,8 @@ async def lifespan(app: fastapi.FastAPI):
     await session.close()
 
 
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 app = fastapi.FastAPI(lifespan=lifespan)
 
 

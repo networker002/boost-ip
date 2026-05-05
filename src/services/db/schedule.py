@@ -10,6 +10,7 @@ from services.db.client import supabase
 import random
 from pathlib import Path
 import asyncio
+from ...main import logger
 
 class Lesson(TypedDict):
     time: str
@@ -64,12 +65,12 @@ class Schedule():
         res = supabase.table("schedule_updates").select("*").eq("group_name", self.group_name).execute()
 
         if res.data:
-            print(f"Have data, {len(res.data)} elements")
+            logger.info(f"Have data, {len(res.data)} elements")
             data = res.data[0]
             ct = data['content']
-            print(ct)
+            logger.info(ct)
             ctd = ct["Data"]
-            print(ctd)
+            logger.info(ctd)
             return ctd
 
     async def get_schedule_async(self) -> Tuple[str, Dict[str, Any]]:
