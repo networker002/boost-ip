@@ -3,9 +3,9 @@ import logging
 import requests as req
 from collections import defaultdict
 from typing import Dict, List, Any, TypedDict, Optional, Tuple
-# import os, sys
-# from pathlib import Path
-# sys.path.append(os.path.join(os.path.dirname(__file__), '../..'))
+import os, sys
+from pathlib import Path
+sys.path.append(os.path.join(os.path.dirname(__file__), '../..'))
 from services import get_weeks
 from services.db.client import supabase
 import random
@@ -31,6 +31,7 @@ class Schedule():
             with open(self.url_path, encoding="utf-8") as file_schedule:
                 data_ = json.load(file_schedule)
                 self.url = data_.get("url") + "data?group="
+                self.url += self.group_name
         except FileNotFoundError:
             raise FileNotFoundError("Not found!")
         
@@ -49,19 +50,19 @@ class Schedule():
                 Data = resp.json()
                 return Data  # {Times:...}
             else: 
-                return ("Not found", 404)
+                print(f"Failed to fetch schedule data. Status code: {resp.status_code}")
+                return None
         except Exception as e:
-            return (None, "Error " + str(e))
+            return None
         
     def set_Time(self) -> list:
         schedule = self.get_Time()
-        if not str(schedule).startswith("(No") and not str(schedule).startswith("(Error") or isinstance(schedule, dict):
+        if schedule:
             schedule: list = schedule.get("Times", [])
             return schedule
         return []
 
-    def parse_by_group(self) -> List[Dict[str, Any]]:
-        self.url += self.group_name.upper()
+    def parse_by_group(self):
 
         res = supabase.table("schedule_updates").select("*").eq("group_name", self.group_name).execute()
 
@@ -73,6 +74,9 @@ class Schedule():
             ctd = ct["Data"]
             logger.info(ctd)
             return ctd
+        else:
+            print("No data for group:", self.group_name)
+            return []
 
     async def get_schedule_async(self) -> Tuple[str, Dict[str, Any]]:
         timings, subjects = await asyncio.to_thread(
@@ -80,7 +84,8 @@ class Schedule():
         )
         
         if not timings or not subjects:
-            return {}, {}
+            print("No schedule data available.")
+            return {}
 
         days = defaultdict(lambda: defaultdict(list))
         day_names = {
@@ -99,20 +104,22 @@ class Schedule():
 
         for lesson in subjects:
             day = lesson["Day"]
-            subgroup = div_days.get(lesson["DayNumber"])
+            subgroup = div_days.get(int(lesson["DayNumber"]))
             time_info = lesson["Time"]
-            time_idx = time_info["Time"]
-            time_name = timings[time_idx - 1]["Time"] if 0 < time_idx <= len(timings) else "0 пара"
+            time_idx = time_info["Code"]
+            #print(lesson)
+            time_name = timings[int(time_idx) - 1]["Time"] if 0 < int(time_idx) <= len(timings) else "0 пара"
             
             lesson_data = {
                 'time': time_name,
                 'time_code': time_idx,
                 'subject': lesson["Class"]["Name"],
-                'teacher': lesson["Class"]["Teacher"],
+                'teacher': lesson["Class"]["TeacherFull"],
                 'room': lesson["Room"]["Name"] or "Не указана"
             }
-            # print(lesson_data)
+            
             days[day][subgroup].append(lesson_data)
+
 
         result = {}
         for day_num in sorted(days.keys()):
@@ -158,7 +165,7 @@ class Schedule():
             day = lesson["Day"]
             subgroup = div_days.get(lesson["DayNumber"])
             time_info = lesson["Time"]
-            time_idx = time_info["Time"]
+            time_idx = time_info["Code"]
             time_name = timings[time_idx - 1]["Time"] if 0 < time_idx <= len(timings) else "0 пара"
             
             lesson_data = {
@@ -225,7 +232,7 @@ class Schedule():
             subgroup = div_days.get(int(lesson["DayNumber"]))
             time_info = lesson["Time"]
             time_idx = time_info["Code"]
-            print(lesson)
+            #print(lesson)
             time_name = timings[int(time_idx) - 1]["Time"] if 0 < int(time_idx) <= len(timings) else "0 пара"
             
             lesson_data = {

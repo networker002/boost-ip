@@ -58,7 +58,8 @@ async def _get_schedule_logic(message: types.Message, user_id: int, bot: Bot):
     
     try:
         group_name = res.get("group_name")
-        response = schedule.Schedule(group_name=group_name).run_()
+        # response = schedule.Schedule(group_name=group_name).run_()
+        response = await schedule.Schedule(group_name=group_name).get_schedule_async()
         print(63)
         print(response)
     except Exception as e:
@@ -104,7 +105,7 @@ async def _get_schedule_logic(message: types.Message, user_id: int, bot: Bot):
                     f"\n\n<b>{lesson['time']}</b>"
                     f" {time_range[0]} - {time_range[1]}\n"
                 )
-                string += f"{lesson['subject']} ({lesson["room"]})"
+                string += f"{lesson['subject']} ({lesson['room']})"
 
     if not string:
         await _safe_edit_text(sent_message, "Пока что пусто")
