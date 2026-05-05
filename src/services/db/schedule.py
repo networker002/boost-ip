@@ -76,6 +76,7 @@ class Schedule():
         # print(75)
         # print(res)
         if res.data:
+            print(f"Have data, {len(res.data)} elements")
             data = res.data[0]
             last_checked = data.get("last_checked")
             ct = data['content']

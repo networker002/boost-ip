@@ -1,15 +1,14 @@
-import asyncio
 import os
+from contextlib import asynccontextmanager
 from dotenv import load_dotenv
 from aiohttp import ClientTimeout
 from aiogram import Bot, Dispatcher
 from aiogram.client.session.aiohttp import AiohttpSession
 from aiogram.client.telegram import TelegramAPIServer
+import aiohttp
 from bot.handlers import start, show_c, conv, schedule, set_group, profile, inline
 from utils.anti_flood import AntiFloodMiddleware
-import threading
 import hmac
-import json
 import time
 from hashlib import sha256
 from urllib.parse import parse_qsl
@@ -17,15 +16,12 @@ from urllib.parse import parse_qsl
 load_dotenv()
 BOT_API_URL = os.getenv("TELEGRAM_BOT_API_URL")
 BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
+WEBHOOK_HOST = os.getenv("TELEGRAM_WEBHOOK_HOST")
+WEBHOOK_PATH = os.getenv("TELEGRAM_WEBHOOK_PATH")
+WEBHOOK_SECRET = os.getenv("TELEGRAM_WEBHOOK_SECRET")
 
-if BOT_API_URL is not None:
-    session = AiohttpSession(api=TelegramAPIServer.from_base(BOT_API_URL, is_local=True), timeout=ClientTimeout(total=60))
-    bot = Bot(token=BOT_TOKEN, session=session)
-else:
-    bot = Bot(token=BOT_TOKEN)
 dp = Dispatcher()
 
-# add here
 dp.include_router(start.router)
 dp.include_router(show_c.router)
 dp.include_router(conv.router)
@@ -34,37 +30,75 @@ dp.include_router(schedule.router)
 dp.include_router(profile.router)
 dp.include_router(inline.router)
 
-# async def main():
-#     await dp.start_polling(bot)
-
-# if __name__ == "__main__":
-#     asyncio.run(main())
-
-async def start_bot():
-    dp.update.outer_middleware(AntiFloodMiddleware(default_rate=1.5))
-    await dp.start_polling(bot)
-
-# app = Flask(__name__)
-
-# @app.route("/health")
-# def health_check():
-#     return "OK", 200
-
-# def run_http_server():
-#     port = int(os.environ.get("PORT", 10000))
-#     app.run(host="0.0.0.0", port=port)
-
 import fastapi
 from services.db import schedule as sch
-from services.db import user_group
 from pathlib import Path
 import json
 import uvicorn
-import threading
 from services.db import user_group
 from fastapi.middleware.cors import CORSMiddleware
 
-app = fastapi.FastAPI()
+
+async def add_proxy(server, port, proxy_type, kvargs={}):
+    url = f"{BOT_API_URL}/bot{BOT_TOKEN}/addProxy"
+    payload = {
+        "server": server,
+        "port": port,
+        "type": proxy_type,
+        **kvargs
+    }
+
+    async with aiohttp.ClientSession() as session:
+        async with session.post(url, json=payload) as resp:
+            return await resp.json()
+
+
+@asynccontextmanager
+async def lifespan(app: fastapi.FastAPI):
+    if BOT_API_URL:
+        TDLIGHT_PROXY_TYPE = os.getenv("TDLIGHT_PROXY_TYPE")
+        TDLIGHT_PROXY_HOST = os.getenv("TDLIGHT_PROXY_HOST")
+        TDLIGHT_PROXY_PORT = os.getenv("TDLIGHT_PROXY_PORT")
+        TDLIGHT_PROXY_SECRET = os.getenv("TDLIGHT_PROXY_SECRET")
+        TDLIGHT_PROXY_USERNAME = os.getenv("TDLIGHT_PROXY_USERNAME")
+        TDLIGHT_PROXY_PASSWORD = os.getenv("TDLIGHT_PROXY_PASSWORD")
+        if TDLIGHT_PROXY_TYPE == "mtproto" and TDLIGHT_PROXY_HOST and TDLIGHT_PROXY_PORT and TDLIGHT_PROXY_SECRET:
+            print(await add_proxy(TDLIGHT_PROXY_HOST, int(TDLIGHT_PROXY_PORT), TDLIGHT_PROXY_TYPE, {"secret": TDLIGHT_PROXY_SECRET, "enable": True}))
+
+        if TDLIGHT_PROXY_TYPE in ["http", "socks5"] and TDLIGHT_PROXY_HOST and TDLIGHT_PROXY_PORT:
+            proxy_data = {"enable": True}
+            if TDLIGHT_PROXY_USERNAME:
+                proxy_data = {**proxy_data, "username": TDLIGHT_PROXY_USERNAME}
+            if TDLIGHT_PROXY_PASSWORD:
+                proxy_data = {**proxy_data, "password": TDLIGHT_PROXY_PASSWORD}
+            print(await add_proxy(TDLIGHT_PROXY_HOST, int(TDLIGHT_PROXY_PORT), TDLIGHT_PROXY_TYPE, proxy_data))
+
+        session = AiohttpSession(
+            api=TelegramAPIServer.from_base(BOT_API_URL, is_local=True),
+            timeout=ClientTimeout(total=60)
+        )
+        bot = Bot(token=BOT_TOKEN, session=session)
+    else:
+        bot = Bot(token=BOT_TOKEN)
+
+    dp.update.outer_middleware(AntiFloodMiddleware(default_rate=1.5))
+
+    await bot.set_webhook(
+        url=f"{WEBHOOK_HOST}{WEBHOOK_PATH}",
+        secret_token=WEBHOOK_SECRET,
+        drop_pending_updates=True,
+    )
+
+    app.state.bot = bot
+    app.state.dp = dp
+
+    yield
+
+    await bot.delete_webhook()
+    await session.close()
+
+
+app = fastapi.FastAPI(lifespan=lifespan)
 
 
 app.add_middleware(
@@ -113,7 +147,7 @@ def validate_telegram_init_data(
         raise InitDataValidationError("auth_date is invalid") from e
 
     now = int(time.time())
-    if max_age_seconds > 0 and now - auth_date > max_age_seconds:
+    if 0 < max_age_seconds < now - auth_date:
         raise InitDataValidationError("initData is expired")
 
     data_check_string = "\n".join(
@@ -154,7 +188,7 @@ def validate_telegram_init_data(
         except json.JSONDecodeError as e:
             raise InitDataValidationError("chat is not valid") from e
 
-    pairs["auth_date"] = auth_date
+    pairs["auth_date"] = str(auth_date)
     return pairs
 
 
@@ -175,6 +209,17 @@ async def authorize(raw_data: str):
 @app.get("/")
 def f():
     return {"status": 200}
+
+
+@app.post(WEBHOOK_PATH)
+async def telegram_webhook(request: fastapi.Request):
+    bot = request.app.state.bot
+    dp = request.app.state.dp
+
+    update = await request.json()
+    from aiogram.types import Update
+    await dp.feed_update(bot, Update(**update))
+    return {"ok": True}
 
 
 @app.get("/group")
@@ -240,13 +285,5 @@ async def get_schedule(request: fastapi.Request):
     return string or "Пока что пусто"
 
 
-def run_api():
-    # uvicorn.run(app, host="https://boost.rorosin.ru", port=443)
-    uvicorn.run(app, host="0.0.0.0", port=8000)
-
 if __name__ == "__main__":
-    # http_thread = threading.Thread(target=run_http_server, daemon=True)
-    # http_thread.start()
-    api_thread = threading.Thread(target=run_api, daemon=True)
-    api_thread.start()
-    asyncio.run(start_bot())
+    uvicorn.run(app, host="0.0.0.0", port=8000)
