@@ -55,36 +55,21 @@ class Schedule():
         schedule = self.get_Time()
         if not str(schedule).startswith("(No") and not str(schedule).startswith("(Error") or isinstance(schedule, dict):
             schedule: list = schedule.get("Times", [])
-            # print(schedule)
             return schedule
         return []
 
     def parse_by_group(self) -> List[Dict[str, Any]]:
-        # url_example = "https://www.miet.ru/schedule/data?group=%D0%98%D0%A1-25-14%D0%9E"
         self.url += self.group_name.upper()
 
-
-        # res = req.get(url=self.url)
-        
-        # if res.status_code == 200:
-        #     data: list = res.json()["Data"]
-        #     return data
-        # return []  
-    
-
         res = supabase.table("schedule_updates").select("*").eq("group_name", self.group_name).execute()
-        # print(75)
-        # print(res)
+
         if res.data:
             print(f"Have data, {len(res.data)} elements")
             data = res.data[0]
-            last_checked = data.get("last_checked")
             ct = data['content']
-            # print(81)
-            # print(ct)
+            print(ct)
             ctd = ct["Data"]
-            # print(84)
-            # print(ctd)
+            print(ctd)
             return ctd
 
     async def get_schedule_async(self) -> Tuple[str, Dict[str, Any]]:
