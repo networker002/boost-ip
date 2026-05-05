@@ -68,7 +68,7 @@ async def check_code(callback: types.CallbackQuery, state: FSMContext):
 
 @router.message(F.text, GroupState.wanting_crate_group)
 async def set_group(message: types.Message, state: FSMContext):
-    group_name = message.text.strip().upper()
+    group_name = message.text.upper()
     groups_list = get_gr_names.get_groups()
 
     if group_name not in groups_list:
