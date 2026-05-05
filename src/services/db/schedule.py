@@ -2,9 +2,9 @@ import json
 import requests as req
 from collections import defaultdict
 from typing import Dict, List, Any, TypedDict, Optional, Tuple
-import os, sys
-from pathlib import Path
-sys.path.append(os.path.join(os.path.dirname(__file__), '../..'))
+# import os, sys
+# from pathlib import Path
+# sys.path.append(os.path.join(os.path.dirname(__file__), '../..'))
 from services import get_weeks
 from services.db.client import supabase
 import random
