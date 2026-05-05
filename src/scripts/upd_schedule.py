@@ -98,6 +98,8 @@ async def update_schedule():
 
         if response.status_code == 200:
             schedule_json = response.json()
+            # print(schedule_json)
+            
 
             print(f"Successfully fetch schedule: {schedule_json}")
             existing_record = supabase.table("schedule_updates").select("*").eq("group_name", group).execute()

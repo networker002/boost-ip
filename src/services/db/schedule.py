@@ -2,6 +2,9 @@ import json
 import requests as req
 from collections import defaultdict
 from typing import Dict, List, Any, TypedDict, Optional, Tuple
+# import os, sys
+# from pathlib import Path
+# sys.path.append(os.path.join(os.path.dirname(__file__), '../..'))
 from services import get_weeks
 from services.db.client import supabase
 import random
@@ -50,9 +53,11 @@ class Schedule():
         
     def set_Time(self) -> list:
         schedule = self.get_Time()
-        if not str(schedule).startswith("(No"):
-            schedule: list = schedule.get("Times")
+        if not str(schedule).startswith("(No") and not str(schedule).startswith("(Error") or isinstance(schedule, dict):
+            schedule: list = schedule.get("Times", [])
+            # print(schedule)
             return schedule
+        return []
 
     def parse_by_group(self) -> List[Dict[str, Any]]:
         # url_example = "https://www.miet.ru/schedule/data?group=%D0%98%D0%A1-25-14%D0%9E"
@@ -68,13 +73,19 @@ class Schedule():
     
 
         res = supabase.table("schedule_updates").select("*").eq("group_name", self.group_name).execute()
-        print(res)
+        # print(75)
+        # print(res)
         if res.data:
             print(f"Have data, {len(res.data)} elements")
             data = res.data[0]
             last_checked = data.get("last_checked")
-            content = data.get("content")
-            return content.get("Data", [])
+            ct = data['content']
+            # print(81)
+            # print(ct)
+            ctd = ct["Data"]
+            # print(84)
+            # print(ctd)
+            return ctd
 
     async def get_schedule_async(self) -> Tuple[str, Dict[str, Any]]:
         timings, subjects = await asyncio.to_thread(
@@ -113,7 +124,7 @@ class Schedule():
                 'teacher': lesson["Class"]["Teacher"],
                 'room': lesson["Room"]["Name"] or "Не указана"
             }
-            
+            # print(lesson_data)
             days[day][subgroup].append(lesson_data)
 
         result = {}
@@ -135,6 +146,8 @@ class Schedule():
     def get_two_weeks(self):
         timings = self.set_Time()
         subjects = self.parse_by_group()
+        # print(147)
+        # print(subjects)
 
         if not timings or not subjects:
             return {}, {}, {}, {}
@@ -195,11 +208,14 @@ class Schedule():
 
 
     def run_(self) -> Tuple[str, Dict] | Any:
-
         timings = self.set_Time()
         subjects = self.parse_by_group()
     
+        # print("!")
+        # print(timings)
+        # print(subjects)
         if not timings or not subjects:
+            print("No schedule data available.")
             return {}
 
         days = defaultdict(lambda: defaultdict(list))
@@ -219,10 +235,11 @@ class Schedule():
 
         for lesson in subjects:
             day = lesson["Day"]
-            subgroup = div_days.get(lesson["DayNumber"])
+            subgroup = div_days.get(int(lesson["DayNumber"]))
             time_info = lesson["Time"]
-            time_idx = time_info["Time"]
-            time_name = timings[time_idx - 1]["Time"] if 0 < time_idx < len(timings) + 1 else "0 пара"
+            time_idx = time_info["Code"]
+            print(lesson)
+            time_name = timings[int(time_idx) - 1]["Time"] if 0 < int(time_idx) <= len(timings) else "0 пара"
             
             lesson_data = {
                 'time': time_name,
@@ -256,4 +273,4 @@ class Schedule():
 
         return get_weeks.group_now_week(result)
     
-# print(Schedule("ИС-25-14О").get_two_weeks())
+# print(Schedule("ИС-25-14О").run_())
