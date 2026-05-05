@@ -88,7 +88,7 @@ async def update_schedule():
         ua =  random.choice(user_agents)
         print(f"[{datetime.datetime.now().hour}:{datetime.datetime.now().minute}:{datetime.datetime.now().second}] Updating schedule for group: {group}\n User-Agent: {ua}")
         url_group = f"{url_gr}data?group={group}"
-        async with httpx.AsyncClient(verify=False, timeout=15.0) as client:
+        async with httpx.AsyncClient(verify=False, timeout=15.0, proxy=os.environ.get("MIET_PROXY")) as client:
             response = await client.get(url_group, headers={"User-Agent": ua})
 
         if response.status_code == 200:
