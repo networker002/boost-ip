@@ -1,4 +1,5 @@
 import json
+import logging
 import requests as req
 from collections import defaultdict
 from typing import Dict, List, Any, TypedDict, Optional, Tuple
@@ -10,7 +11,6 @@ from services.db.client import supabase
 import random
 from pathlib import Path
 import asyncio
-from ...main import logger
 
 class Lesson(TypedDict):
     time: str
@@ -18,7 +18,8 @@ class Lesson(TypedDict):
     subject: str
     teacher: str
     room: str
-     
+
+logger = logging.getLogger("app")
 
 class Schedule():
     def __init__(self, group_name: str):
@@ -258,5 +259,5 @@ class Schedule():
         #result[week_day][[day_name]|[data[0|1|2|3]]]
 
         return get_weeks.group_now_week(result)
-    
+
 # print(Schedule("ИС-25-14О").run_())

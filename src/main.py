@@ -100,7 +100,7 @@ async def lifespan(app: fastapi.FastAPI):
 
 
 logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("app")
 app = fastapi.FastAPI(lifespan=lifespan)
 
 
