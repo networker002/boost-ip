@@ -20,6 +20,8 @@ SCHEDULE_JSON = CONFIG_DIR / "schedule.json"
 GROUPS_JSON = CONFIG_DIR / "groups.json"
 UA = CONFIG_DIR / "useragents.txt"
 
+MIET_PROXY = os.environ.get("MIET_PROXY")
+
 
 time_start = datetime.datetime.now()
 
@@ -42,8 +44,8 @@ except (FileNotFoundError, json.JSONDecodeError) as e:
 async def check_groups():
     print("Checking groups...")
     data = {}
-    
-    
+
+
     if GROUPS_JSON.exists():
         try:
             with open(GROUPS_JSON, "r", encoding="utf-8") as f:
@@ -66,12 +68,14 @@ async def check_groups():
         return groups, created_at_str
     else:
         print("Groups data is outdated or missing, fetching new data...")
-        async with httpx.AsyncClient(verify=False, timeout=15.0, proxy=os.environ.get("MIET_PROXY")) as client:
+        async with httpx.AsyncClient(verify=False, timeout=15.0, proxy=MIET_PROXY) as client:
+            print(f"Fetching groups with proxy {MIET_PROXY}...")
             response = await client.get(url_grs, headers={"User-Agent": random.choice(user_agents)})
         if response.status_code == 200:
             groups = response.json()
             new_created_at = datetime.datetime.now().isoformat()
-            
+            print(f"Successfully fetch groups: {groups}")
+
             with open(GROUPS_JSON, "w", encoding="utf-8") as f:
                 json.dump({"created_at": new_created_at, "groups": groups}, f, ensure_ascii=False, indent=4)
             return groups, new_created_at
@@ -88,25 +92,26 @@ async def update_schedule():
         ua =  random.choice(user_agents)
         print(f"[{datetime.datetime.now().hour}:{datetime.datetime.now().minute}:{datetime.datetime.now().second}] Updating schedule for group: {group}\n User-Agent: {ua}")
         url_group = f"{url_gr}data?group={group}"
-        async with httpx.AsyncClient(verify=False, timeout=15.0, proxy=os.environ.get("MIET_PROXY")) as client:
+        async with httpx.AsyncClient(verify=False, timeout=15.0, proxy=MIET_PROXY) as client:
+            print(f"Fetching schedule for group {group} with proxy {MIET_PROXY}")
             response = await client.get(url_group, headers={"User-Agent": ua})
 
         if response.status_code == 200:
             schedule_json = response.json()
-            
-            
+
+            print(f"Successfully fetch schedule: {schedule_json}")
             existing_record = supabase.table("schedule_updates").select("*").eq("group_name", group).execute()
-            
+
             if existing_record.data:
                 print(f"[{datetime.datetime.now().hour}:{datetime.datetime.now().minute}:{datetime.datetime.now().second}] Updating existing record for group: {group}")
-                
+
                 if str(existing_record.data[0].get("content")) != str(schedule_json).replace("'", '"'):
                     builder = InlineKeyboardBuilder()
                     builder.row(InlineKeyboardButton(
                         text="Расписание", 
                         web_app=WebAppInfo(url="https://networker002.github.io/webapp/")
                     ))
-                    
+
                     print(f"Schedule for {group} has changed, updating DB.")
                     msg = "Расписание поменялось! Проверьте обновленное расписание 🚀"
                     users = supabase.table("user_groups").select("tg_id", "group_name").eq("group_name", group).execute()
@@ -114,7 +119,7 @@ async def update_schedule():
                         user_id = user.get("tg_id")
                         await Bot(token=os.getenv("TELEGRAM_BOT_TOKEN")).send_message(chat_id=user_id, text=msg, reply_markup=builder.as_markup())
                         asyncio.sleep(0.1)
-                
+
                 supabase.table("schedule_updates").update({
                     "last_checked": datetime.datetime.now().isoformat(), 
                     "content": schedule_json
@@ -130,8 +135,9 @@ async def update_schedule():
                 print(f"Schedule for {group} inserted into DB.")
         else:
             print(f"Failed to fetch schedule for {group}: {response.status_code}")
-            
+
     print(f"Schedule update completed in {(datetime.datetime.now() - time_start).total_seconds()} seconds.")
 
 if __name__ == "__main__":
     asyncio.run(update_schedule())
+ 
