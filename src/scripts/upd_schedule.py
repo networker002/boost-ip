@@ -66,7 +66,7 @@ async def check_groups():
         return groups, created_at_str
     else:
         print("Groups data is outdated or missing, fetching new data...")
-        async with httpx.AsyncClient(verify=False, timeout=15.0) as client:
+        async with httpx.AsyncClient(verify=False, timeout=15.0, proxy=os.environ.get("MIET_PROXY")) as client:
             response = await client.get(url_grs, headers={"User-Agent": random.choice(user_agents)})
         if response.status_code == 200:
             groups = response.json()
