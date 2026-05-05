@@ -70,6 +70,7 @@ class Schedule():
         res = supabase.table("schedule_updates").select("*").eq("group_name", self.group_name).execute()
         print(res)
         if res.data:
+            print(f"Have data, {len(res.data)} elements")
             data = res.data[0]
             last_checked = data.get("last_checked")
             content = data.get("content")

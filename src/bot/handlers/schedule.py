@@ -40,7 +40,7 @@ async def _safe_edit_text(msg: types.Message, text: str, **kwargs):
 async def _get_schedule_logic(message: types.Message, user_id: int, bot: Bot):
     sent_message = await message.answer(
         r_choice([
-            "Загружаю расписаие. Ожидайте...",
+            "Загружаю расписание. Ожидайте...",
             "Расписание отправляется...",
             "Получаем расписание...",
             "Секунду... Расписание обрабатывается",
@@ -58,7 +58,6 @@ async def _get_schedule_logic(message: types.Message, user_id: int, bot: Bot):
     
     try:
         group_name = res.get("group_name")
-        print(61)
         response = schedule.Schedule(group_name=group_name).run_()
         print(63)
         print(response)
