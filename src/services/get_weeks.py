@@ -45,15 +45,8 @@ def group_now_week(data: Dict[int, Dict[int, List[Dict[str, Any]]]], previos: bo
                 pass
             
     else:
-        for i in range(1, 7):
-            try:
-                if now_is in data[i]["divided"]:
-                    response[days_name.get(i)].append(data[i]["divided"][now_is])
-                    response[days_name.get(i)].append(data[i]["divided"][previos_week])
-                    # if previos:
-                    #     response[days_name.get(i)].append(data[i]["divided"][previos_week])
-            except (KeyError, TypeError):
-                pass
+        now_is = previos_week
+        group_now_week(data, previos=False)
             
             
     return now_is or "Неизвестная неделя", response
@@ -81,6 +74,7 @@ def group_now_week(data: Dict[int, Dict[int, List[Dict[str, Any]]]], previos: bo
             
     #     return now_is or "Неизвестная неделя", now_data, previos_week or "Неизвестная неделя", previos_data
         
-
+def group_now_week_previos(data: Dict[int, Dict[int, List[Dict[str, Any]]]]) -> Tuple[str, Dict]:
+    return group_now_week(data, previos=True)
 
 print(mapping.get(week_passed % 4, "Неизвестная неделя"))
