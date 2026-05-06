@@ -4,6 +4,12 @@ import datetime
 from pathlib import Path
 import random
 
+
+proxies = {
+    "http": os.environ.get('MIET_PROXY'),
+    "https": os.environ.get('MIET_PROXY')
+}
+
 def groups_req() -> None:
     url = "https://www.miet.ru/schedule/groups"
     try:
@@ -11,13 +17,13 @@ def groups_req() -> None:
             user_agents = [line.strip() for line in f.readlines() if line.strip()]
     except FileNotFoundError:
         user_agents = ["Mozilla/5.0"]
-    
+
     headers = {
         "User-Agent": random.choice(user_agents) if user_agents else "Mozilla/5.0"
     }
 
     try:
-        res = requests.get(url=url, headers=headers, timeout=10)
+        res = requests.get(url=url, headers=headers, timeout=10, proxies=proxies)
         if res.status_code == 200:
             data = res.json()
             create_time = datetime.datetime.now().isoformat()
