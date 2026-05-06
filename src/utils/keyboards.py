@@ -1,4 +1,4 @@
-from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
+from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup, WebAppInfo
 
 def get_commands_kb() -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup(inline_keyboard=[
@@ -57,7 +57,7 @@ def watch_schedule_edit_group_kb() -> InlineKeyboardMarkup:
 
 def profile_kb() -> InlineKeyboardMarkup:
     buttons = [
-        [InlineKeyboardButton(text="Посмотреть расписание", url="https://t.me/mietcbot/webapp")], 
+        [InlineKeyboardButton(text="Посмотреть расписание", web_app=WebAppInfo(url="https://networker002.github.io/webapp/"))], 
         [InlineKeyboardButton(text="Изменить группу", callback_data="edit_group_btn")]
     ] 
     return InlineKeyboardMarkup(inline_keyboard=buttons)
