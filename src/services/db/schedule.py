@@ -12,6 +12,12 @@ import random
 from pathlib import Path
 import asyncio
 
+
+proxies = {
+    "http": os.environ.get('MIET_PROXY'),
+    "https": os.environ.get('MIET_PROXY')
+}
+
 class Lesson(TypedDict):
     time: str
     time_code: int
@@ -45,7 +51,7 @@ class Schedule():
                 ua = random.choice(self.data_ua)
                 headers={"User-Agent":ua}
             except Exception: headers = None
-            resp = req.get(url=self.url + "'", headers=headers)
+            resp = req.get(url=self.url + "'", headers=headers, proxies=(proxies if os.environ.get("MIET_PROXY") else None))
             if resp.status_code == 200:
                 Data = resp.json()
                 return Data  # {Times:...}
