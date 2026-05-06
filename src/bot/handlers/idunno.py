@@ -13,9 +13,9 @@ class IdontKnowFilter(BaseFilter):
     key = "idontknow"
 
     async def __call__(self, message: types.Message) -> bool:
-        if message.text.strip().lower() not in c_list:
+        if message.text and message.text.strip().lower() not in c_list:
             return True
-        return False
+        return not not message.text
 
 @router.message(IdontKnowFilter(), StateFilter(None))
 async def idunno(message: types.Message):
