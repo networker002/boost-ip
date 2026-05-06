@@ -253,7 +253,6 @@ async def get_schedule(request: fastapi.Request):
         config_path = Path(__file__).parent.parent / "config" / "example-time.json"
         with open(config_path, encoding="utf-8") as f:
             data = json.load(f)
-            # print(data)
             for c in data["Times"]:
                 codes[c["Code"]] = (
                     c["TimeFrom"][-8:-3],

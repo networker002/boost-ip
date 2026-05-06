@@ -73,12 +73,9 @@ class Schedule():
         res = supabase.table("schedule_updates").select("*").eq("group_name", self.group_name).execute()
 
         if res.data:
-            logger.info(f"Have data, {len(res.data)} elements")
             data = res.data[0]
             ct = data['content']
-            logger.info(ct)
             ctd = ct["Data"]
-            logger.info(ctd)
             return ctd
         else:
             print("No data for group:", self.group_name)
@@ -113,9 +110,8 @@ class Schedule():
             subgroup = div_days.get(int(lesson["DayNumber"]))
             time_info = lesson["Time"]
             time_idx = time_info["Code"]
-            #print(lesson)
             time_name = timings[int(time_idx) - 1]["Time"] if 0 < int(time_idx) <= len(timings) else "0 пара"
-            
+
             lesson_data = {
                 'time': time_name,
                 'time_code': time_idx,
@@ -123,7 +119,7 @@ class Schedule():
                 'teacher': lesson["Class"]["TeacherFull"],
                 'room': lesson["Room"]["Name"] or "Не указана"
             }
-            
+
             days[day][subgroup].append(lesson_data)
 
 
@@ -140,14 +136,12 @@ class Schedule():
                 'divided': day_schedule
             }
 
-        
+
         return get_weeks.group_now_week(result)
-    
+
     def get_two_weeks(self):
         timings = self.set_Time()
         subjects = self.parse_by_group()
-        # print(147)
-        # print(subjects)
 
         if not timings or not subjects:
             return {}, {}, {}, {}
@@ -173,7 +167,7 @@ class Schedule():
             time_info = lesson["Time"]
             time_idx = time_info["Code"]
             time_name = timings[time_idx - 1]["Time"] if 0 < time_idx <= len(timings) else "0 пара"
-            
+
             lesson_data = {
                 'time': time_name,
                 'time_code': time_idx,
@@ -181,10 +175,10 @@ class Schedule():
                 'teacher': lesson["Class"]["Teacher"],
                 'room': lesson["Room"]["Name"] or "Не указана"
             }
-            
+
             days[day][subgroup].append(lesson_data)
 
-        
+
         result = {}
         for day_num in sorted(days.keys()):
             day_schedule = {}
@@ -202,18 +196,13 @@ class Schedule():
         # 2 -- 2 числитель
         # 3 -- 2 знаменатель
 
-        #result[week_day][[day_name]|[data[0|1|2|3]]]
-
         return get_weeks.group_now_week(result, previos=True)
 
 
     def run_(self) -> Tuple[str, Dict] | Any:
         timings = self.set_Time()
         subjects = self.parse_by_group()
-    
-        # print("!")
-        # print(timings)
-        # print(subjects)
+
         if not timings or not subjects:
             print("No schedule data available.")
             return {}
@@ -238,9 +227,8 @@ class Schedule():
             subgroup = div_days.get(int(lesson["DayNumber"]))
             time_info = lesson["Time"]
             time_idx = time_info["Code"]
-            #print(lesson)
             time_name = timings[int(time_idx) - 1]["Time"] if 0 < int(time_idx) <= len(timings) else "0 пара"
-            
+
             lesson_data = {
                 'time': time_name,
                 'time_code': time_idx,
@@ -248,10 +236,9 @@ class Schedule():
                 'teacher': lesson["Class"]["TeacherFull"],
                 'room': lesson["Room"]["Name"] or "Не указана"
             }
-            
+
             days[day][subgroup].append(lesson_data)
 
-        
         result = {}
         for day_num in sorted(days.keys()):
             day_schedule = {}
@@ -269,8 +256,6 @@ class Schedule():
         # 2 -- 2 числитель
         # 3 -- 2 знаменатель
 
-        #result[week_day][[day_name]|[data[0|1|2|3]]]
-
         return get_weeks.group_now_week(result)
 
-# print(Schedule("ИС-25-14О").run_())
+
