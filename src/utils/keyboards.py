@@ -54,3 +54,10 @@ def watch_schedule_edit_group_kb() -> InlineKeyboardMarkup:
         [InlineKeyboardButton(text="Изменить группу", callback_data="edit_group_btn")]
     ] 
     return InlineKeyboardMarkup(inline_keyboard=buttons)
+
+def profile_kb() -> InlineKeyboardMarkup:
+    buttons = [
+        [InlineKeyboardButton(text="Посмотреть расписание", url="https://t.me/mietcbot/webapp")], 
+        [InlineKeyboardButton(text="Изменить группу", callback_data="edit_group_btn")]
+    ] 
+    return InlineKeyboardMarkup(inline_keyboard=buttons)

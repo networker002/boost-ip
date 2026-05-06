@@ -72,8 +72,13 @@ async def set_group(message: types.Message, state: FSMContext):
     groups_list = get_gr_names.get_groups()
 
     if group_name not in groups_list:
-        await message.answer("Такой группы не существует. Пожалуйста, проверьте правильность ввода.")
-        return
+        if group_name.startswith("/"):
+            await state.clear()
+            print("User entered command while setting group, clearing state")
+        else:
+            await message.answer("Такой группы не существует. Пожалуйста, проверьте правильность ввода.")
+            return
+        
     
     elif group_name in groups_list:
         if await set_user_group(message.from_user.id, group_name):
@@ -108,8 +113,12 @@ async def edit_schedule(message: types.Message, state: FSMContext):
     group_list = get_gr_names.get_groups()
     
     if new_group not in group_list:
-        await message.answer("Такой группы не существует. Пожалуйста, проверьте правильность ввода.")
-        return
+        if new_group.startswith("/"):
+            await state.clear()
+            print("User entered command while editing group, clearing state")
+        else:
+            await message.answer("Такой группы не существует. Пожалуйста, проверьте правильность ввода.")
+            return
     
     elif new_group in group_list:
     
