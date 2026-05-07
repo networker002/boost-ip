@@ -26,4 +26,4 @@ async def idunno(message: Message, bot: Bot):
 
 @router.message(F.sticker)
 async def and_st(message: Message):
-    await message.answer_sticker(sticker="CAACAgEAAxkBAAEDxAxp_FYHmnT8vA30q4yGskiSGiUkPQAC5ggAAjxi4Uc4BD6jxvlNxTsE")
+    await message.answer_sticker("CAACAgEAAxkBAAEDxJ9p_H-sHzRDLViWdK25rTuo9BW2vQACbQsAAsWd6EcFQyNMZqcYpTsE")
