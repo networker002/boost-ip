@@ -1,6 +1,6 @@
 import asyncio
 
-from aiogram import Bot, types, Router
+from aiogram import Bot, types, Router, F
 from aiogram.filters import BaseFilter, StateFilter
 from utils.command_list import get_command_list_text as get
 from aiogram.enums import ChatAction
@@ -26,3 +26,7 @@ async def idunno(message: types.Message):
         "<i>Вот список доступных команд:</i>\n" + get(),
         parse_mode="HTML"
     )
+
+@router.message(F.sticker)
+async def and_st(message: types.Message):
+    await message.answer_sticker(sticker="CAACAgEAAxkBAAEDxAxp_FYHmnT8vA30q4yGskiSGiUkPQAC5ggAAjxi4Uc4BD6jxvlNxTsE")
