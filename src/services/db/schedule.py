@@ -128,7 +128,7 @@ class Schedule():
             subgroup = div_days.get(int(lesson["DayNumber"]))
             time_info = lesson["Time"]
             time_idx = time_info["Code"]
-            time_name = timings[int(time_idx) - 1]["Time"] if 0 < int(time_idx) <= len(timings) else "0 пара"
+            time_name = timings[int(time_idx)]["Time"] if 0 <= int(time_idx) < len(timings) else "0 пара"
 
             lesson_data = {
                     'time': time_name,
@@ -146,7 +146,7 @@ class Schedule():
             subgroup = div_days.get(int(lesson["DayNumber"]))
             time_info = lesson["Time"]
             time_idx = time_info["Code"]
-            time_name = timings[int(time_idx) - 1]["Time"] if 0 < int(time_idx) <= len(timings) else "0 пара"
+            time_name = timings[int(time_idx)]["Time"] if 0 <= int(time_idx) < len(timings) else "0 пара"
 
             lesson_data = {
                     'time': time_name,
@@ -214,7 +214,7 @@ class Schedule():
             subgroup = div_days.get(lesson["DayNumber"])
             time_info = lesson["Time"]
             time_idx = time_info["Code"]
-            time_name = timings[time_idx - 1]["Time"] if 0 < time_idx <= len(timings) else "0 пара"
+            time_name = timings[time_idx]["Time"] if 0 <= time_idx < len(timings) else "0 пара"
 
             lesson_data = {
                 'time': time_name,
@@ -276,7 +276,7 @@ class Schedule():
             subgroup = div_days.get(int(lesson["DayNumber"]))
             time_info = lesson["Time"]
             time_idx = time_info["Code"]
-            time_name = timings[int(time_idx) - 1]["Time"] if 0 < int(time_idx) <= len(timings) else "0 пара"
+            time_name = timings[int(time_idx)]["Time"] if 0 <= int(time_idx) < len(timings) else "0 пара"
 
             lesson_data = {
                     'time': time_name,
@@ -294,7 +294,7 @@ class Schedule():
             subgroup = div_days.get(int(lesson["DayNumber"]))
             time_info = lesson["Time"]
             time_idx = time_info["Code"]
-            time_name = timings[int(time_idx) - 1]["Time"] if 0 < int(time_idx) <= len(timings) else "0 пара"
+            time_name = timings[int(time_idx)]["Time"] if 0 <= int(time_idx) < len(timings) else "0 пара"
 
             lesson_data = {
                     'time': time_name,
@@ -333,5 +333,5 @@ class Schedule():
             }
 
 
-        print("RES: ",result2)
+        #print("RES: ",result2)
         return get_weeks.group_now_week(result) if not prev_next else ( get_weeks.group_now_week(result2, week_type=get_weeks.prev), get_weeks.group_now_week(result), get_weeks.group_now_week(result, week_type=get_weeks.next) )
