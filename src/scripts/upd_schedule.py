@@ -160,7 +160,7 @@ async def update_schedule():
                     ))
 
                     print(f"Schedule for {group} has changed, updating DB.")
-                    msg = "<b>🔔 Расписание поменялось!</b> Проверьте обновленное расписание"
+                    msg = "<b>🔔 Расписание поменялось!</b>\nПроверьте обновленное расписание"
                     users = supabase.table("user_groups").select("tg_id", "group_name").eq("group_name", group).execute()
                     for user in users.data:
                         user_id = user.get("tg_id")
