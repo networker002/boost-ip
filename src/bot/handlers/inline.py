@@ -73,29 +73,29 @@ async def schedule_inline(inline_query: InlineQuery):
         if text in [" " * x for x in range(0, 13)] or text in ["нед", "неделя"]:
             text = "неделя" 
             for day, contents in result.items(): 
-                for content in contents:
-                    if not content:
-                        continue
-                    if counter == 0:
-                        string += f"""\n\n<blockquote>——————————————\n📅 <b>{day}</b>"""
+                
+                if not contents:
+                    continue
+                if counter == 0:
+                    string += f"""\n\n<blockquote>——————————————\n📅 <b>{day}</b>"""
                     
-                    else:
-                        string += f"""\n\n——————————————\n📅 <b>{day}</b>"""
+                else:
+                    string += f"""\n\n——————————————\n📅 <b>{day}</b>"""
 
-                    counter += 1
+                counter += 1
 
-                    for lesson in content:
-                        time_code = lesson["time_code"]
+                for lesson in contents:
+                    time_code = lesson["time_code"]
                         # print(100)
-                        time_range = codes.get(time_code, ("", ""))
+                    time_range = codes.get(int(time_code), ("", ""))
                         # print(time_range)
-                        string += (
+                    string += (
                             f"\n\n<b>{lesson['time']}</b>"
                             f" {time_range[0]} - {time_range[1]}\n"
                         )
-                        string += f"{lesson['subject']} ({lesson['room']})"
+                    string += f"{lesson['subject']} ({lesson['room']})"
         else:
-            for lesson in result[0]:
+            for lesson in result:
                 #lesson = content
                 time_code = lesson["time_code"]
                     # print(100)
@@ -114,10 +114,10 @@ async def schedule_inline(inline_query: InlineQuery):
                         )
                 d2 += 1
                 string += f"{lesson['subject']} ({lesson["room"]})"
-        print(week_type)
-        print(counter, d2)
-        print(string)
-        print(result)
+        #print(week_type)
+        #print(counter, d2)
+        #print(string)
+        #print(result)
     except Exception as e:
         result_id = md5(text.encode()).hexdigest()
         res = InlineQueryResultArticle(
@@ -129,13 +129,13 @@ async def schedule_inline(inline_query: InlineQuery):
             ),
             description="Значит - выходной!"
         )
-        print(week_type)
-        print(e)
-        print(string)
+        #print(week_type)
+        #print(e)
+        #print(string)
         await inline_query.answer(results=[res], cache_time=30)
         return
     
-    print(result)
+    #print(result)
     result_id = md5(text.encode()).hexdigest()
             
     if result is None:
