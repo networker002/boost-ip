@@ -161,11 +161,11 @@ async def update_schedule():
                     ))
 
                     print(f"Schedule for {group} has changed, updating DB.")
-                    msg = "🔔 Расписание поменялось! Проверьте обновленное расписание 🚀"
+                    msg = "<b>🔔 Расписание поменялось!</b> Проверьте обновленное расписание"
                     users = supabase.table("user_groups").select("tg_id", "group_name").eq("group_name", group).execute()
                     for user in users.data:
                         user_id = user.get("tg_id")
-                        await Bot(token=os.getenv("TELEGRAM_BOT_TOKEN")).send_message(chat_id=user_id, text=msg, reply_markup=builder.as_markup())
+                        await Bot(token=os.getenv("TELEGRAM_BOT_TOKEN")).send_message(chat_id=user_id, text=msg, parse_mode="HTML", reply_markup=builder.as_markup())
                         asyncio.sleep(0.1)
 
                 supabase.table("schedule_updates").update({
