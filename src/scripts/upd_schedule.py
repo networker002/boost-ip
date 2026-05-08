@@ -137,13 +137,13 @@ async def update_schedule():
                     3: 2
                     }
                     
-                    old_ct = None
+                    old_ct = """"""
 
                     week_passed = (now - start).days // 7
                     #print(schedule_json.get("Data", []))
                     for day in schedule_json["Data"]:
-                        if day["DayNumber"] == mp.get(week_passed%4):
-                            old_ct = day
+                        if day["DayNumber"] == mp.get((week_passed-1)%4):
+                            old_ct += day
                     if old_data.data and old_data.data[0].get("old_content") != schedule_json:
                         #print(f"Old content for {group} has changed.")
                         supabase.table("schedule_updates").update({"old_content": old_ct, "last_checked": datetime.datetime.now().isoformat(),}).eq("group_name", group).execute()
