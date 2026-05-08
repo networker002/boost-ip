@@ -120,7 +120,7 @@ async def update_schedule():
                 #print(f"[{datetime.datetime.now().hour}:{datetime.datetime.now().minute}:{datetime.datetime.now().second}] Updating existing record for group: {group}")
                 last_upd = existing_record.data[0].get("last_checked")
                 
-                if (datetime.datetime.now() - datetime.datetime.fromisoformat(last_upd)).days < 7:
+                if (datetime.datetime.now() - datetime.datetime.fromisoformat(last_upd)).days > 7:
                     #print(f"Schedule for {group} was updated recently at {last_upd}")
                     old_data = supabase.table("schedule_updates").select("old_content").eq("group_name", group).execute()
                     
@@ -147,21 +147,21 @@ async def update_schedule():
                             old_ct = day
                     if old_data.data and old_data.data[0].get("old_content") != schedule_json:
                         #print(f"Old content for {group} has changed.")
-                        supabase.table("schedule_updates").update({"old_content": old_ct}).eq("group_name", group).execute()
+                        supabase.table("schedule_updates").update({"old_content": old_ct, "last_checked": datetime.datetime.now().isoformat(),}).eq("group_name", group).execute()
                         print(f"Old content for {group} updated in DB.")
                     elif not old_data.data:
-                        supabase.table("schedule_updates").insert({"old_content": old_ct}).eq("group_name", group).execute()
+                        supabase.table("schedule_updates").insert({"old_content": old_ct, "last_checked": datetime.datetime.now().isoformat(),}).eq("group_name", group).execute()
                         print(f"Old content for {group} inserted into DB.")
-                
+
                 if str(existing_record.data[0].get("content")) != str(schedule_json).replace("'", '"'):
                     builder = InlineKeyboardBuilder()
                     builder.row(InlineKeyboardButton(
-                        text="Расписание", 
+                        text="Проверить", 
                         web_app=WebAppInfo(url="https://networker002.github.io/webapp/")
                     ))
 
                     print(f"Schedule for {group} has changed, updating DB.")
-                    msg = "Расписание поменялось! Проверьте обновленное расписание 🚀"
+                    msg = "🔔 Расписание поменялось! Проверьте обновленное расписание 🚀"
                     users = supabase.table("user_groups").select("tg_id", "group_name").eq("group_name", group).execute()
                     for user in users.data:
                         user_id = user.get("tg_id")
@@ -169,7 +169,7 @@ async def update_schedule():
                         asyncio.sleep(0.1)
 
                 supabase.table("schedule_updates").update({
-                    "last_checked": datetime.datetime.now().isoformat(), 
+                    # "last_checked": datetime.datetime.now().isoformat(), 
                     "content": schedule_json
                 }).eq("group_name", group).execute()
                 print(f"Schedule for {group} updated in DB.")
@@ -177,7 +177,7 @@ async def update_schedule():
                 print(f"[{datetime.datetime.now().hour}:{datetime.datetime.now().minute}:{datetime.datetime.now().second}] Inserting new record for group: {group}")
                 supabase.table("schedule_updates").insert({
                     "group_name": group, 
-                    "last_checked": datetime.datetime.now().isoformat(), 
+                    # "last_checked": datetime.datetime.now().isoformat(), 
                     "content": schedule_json
                 }).execute()
                 print(f"Schedule for {group} inserted into DB.")
@@ -188,4 +188,3 @@ async def update_schedule():
 
 if __name__ == "__main__":
     asyncio.run(update_schedule())
-
