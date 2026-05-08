@@ -270,20 +270,19 @@ async def get_schedule(request: fastapi.Request):
 
     string = ""
     for day, contents in days_data.items():
-        for content in contents:
-            if not content:
-                continue
-            string += f"""<div class='day'><h3 class='day-name'>{day}</h3>"""
-            for lesson in content:
-                time_code = lesson["time_code"]
-                time_range = codes.get(time_code, ("", ""))
-                string += (
-                    f"<h4 class='lesson'>{lesson['time']}</h4>"
-                    f"<h6 class='time'> {time_range[0]} - {time_range[1]}</h6>"
-                )
-                string += f"<span class='subject'>{lesson['subject']}</span> <span class='room'>({lesson["room"]})</span>"
-                string += f"<h3 class='teacher'>{lesson['teacher']}</h3>"
-            string += "</div>"
+        if not contents:
+            continue
+        string += f"""<div class='day'><h3 class='day-name'>{day}</h3>"""
+        for lesson in contents:
+            time_code = lesson["time_code"]
+            time_range = codes.get(int(time_code), ("", ""))
+            string += (
+                f"<h4 class='lesson'>{lesson['time']}</h4>"
+                f"<h6 class='time'> {time_range[0]} - {time_range[1]}</h6>"
+            )
+            string += f'<span class="subject">{lesson["subject"]}</span> <span class="room">({lesson["room"]})</span>'
+            string += f"<h3 class='teacher'>{lesson['teacher']}</h3>"
+        string += "</div>"
 
     return string or "Пока что пусто"
 
