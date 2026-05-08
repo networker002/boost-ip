@@ -14,14 +14,13 @@ ROOT_DIR = Path(__file__).parent.parent.parent
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from services.db.client import supabase
 
-
 CONFIG_DIR = ROOT_DIR / "config"
 SCHEDULE_JSON = CONFIG_DIR / "schedule.json"
 GROUPS_JSON = CONFIG_DIR / "groups.json"
 UA = CONFIG_DIR / "useragents.txt"
 
 MIET_PROXY = os.environ.get("MIET_PROXY")
-
+BOT = Bot(token=os.getenv("TELEGRAM_BOT_TOKEN"))
 
 from zoneinfo import ZoneInfo
 from typing import *
@@ -153,7 +152,7 @@ async def update_schedule():
                         supabase.table("schedule_updates").insert({"old_content": old_ct, "last_checked": datetime.datetime.now().isoformat(),}).eq("group_name", group).execute()
                         print(f"Old content for {group} inserted into DB.")
 
-                if str(existing_record.data[0].get("content")) != str(schedule_json).replace("'", '"'):
+                if existing_record.data[0].get("content") != schedule_json:
                     builder = InlineKeyboardBuilder()
                     builder.row(InlineKeyboardButton(
                         text="Проверить", 
@@ -165,7 +164,7 @@ async def update_schedule():
                     users = supabase.table("user_groups").select("tg_id", "group_name").eq("group_name", group).execute()
                     for user in users.data:
                         user_id = user.get("tg_id")
-                        await Bot(token=os.getenv("TELEGRAM_BOT_TOKEN")).send_message(chat_id=user_id, text=msg, parse_mode="HTML", reply_markup=builder.as_markup())
+                        await BOT.send_message(chat_id=user_id, text=msg, parse_mode="HTML", reply_markup=builder.as_markup())
                         asyncio.sleep(0.1)
 
                 supabase.table("schedule_updates").update({
