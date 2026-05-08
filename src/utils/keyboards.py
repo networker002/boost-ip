@@ -1,4 +1,5 @@
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup, WebAppInfo
+from typing import Optional
 
 def get_commands_kb() -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup(inline_keyboard=[
@@ -60,4 +61,21 @@ def profile_kb() -> InlineKeyboardMarkup:
         [InlineKeyboardButton(text="Посмотреть расписание", web_app=WebAppInfo(url="https://networker002.github.io/webapp/"))], 
         [InlineKeyboardButton(text="Изменить группу", callback_data="edit_group_btn")]
     ] 
+    return InlineKeyboardMarkup(inline_keyboard=buttons)
+
+def swipe_schedule_kb(prev_week:str, next_week:str, prev_data: str = "prev_week", next_data: str = "next_week") -> InlineKeyboardMarkup:
+    if not prev_week:
+        buttons = [
+            [InlineKeyboardButton(text=next_week+" ➡️", callback_data=next_data)]
+        ]
+    elif not next_week:
+        buttons = [
+            [InlineKeyboardButton(text="⬅️ "+prev_week, callback_data=prev_data)]
+        ]
+    else:
+        buttons = [
+            [InlineKeyboardButton(text="⬅️ "+prev_week, callback_data=prev_data)],
+            [InlineKeyboardButton(text=next_week+" ➡️", callback_data=next_data)]
+        ]
+    
     return InlineKeyboardMarkup(inline_keyboard=buttons)

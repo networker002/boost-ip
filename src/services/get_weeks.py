@@ -22,59 +22,21 @@ mapping = {
 week_passed = (now - start).days // 7
 
 days_name = {1:"Понедельник", 2:"Вторник", 3:"Среда", 4:"Четверг", 5:"Пятница", 6:"Суббота"}
+now_is = mapping.get(week_passed % 4, "Неизвестная неделя")
+prev = mapping.get((week_passed - 1) % 4, "Неизвестная неделя")
+next = mapping.get((week_passed + 1) % 4, "Неизвестная неделя")
 
-def group_now_week(data: Dict[int, Dict[int, List[Dict[str, Any]]]], previos: bool = False) -> Tuple[str, Dict]:
-    now_is = mapping.get(week_passed % 4, "Неизвестная неделя")
-    previos_week = mapping.get((week_passed - 1) % 4, "Неизвестная неделя")
+def group_now_week(data: Dict[int, Dict[str, Any]], week_type: Optional[str] = None) -> Tuple[str, Dict[str, List[Dict[str, Any]]]]:
+    if week_type is None:
+        week_type = now_is
     
     response = {"Понедельник": [], "Вторник": [], "Среда": [], "Четверг": [], "Пятница": [], "Суббота": []}
     
+    for i in range(1, 7):
+        day_name = days_name.get(i)
+        if day_name and week_type in data.get(i, {}).get("divided", {}):
+            response[day_name] = data[i]["divided"][week_type]
     
-    if previos == False:
+    return week_type, response
         
-        # if previos:
-        #     response = [[{"Понедельник": []}, {"Вторник": []}, {"Среда": []}, {"Четверг": []}, {"Пятница": []}, {"Суббота": []}], [{"Понедельник": []}, {"Вторник": []}, {"Среда": []}, {"Четверг": []}, {"Пятница": []}, {"Суббота": []}]]
-         
-        for i in range(1, 7):
-            try:
-                if now_is in data[i]["divided"]:
-                    response[days_name.get(i)].append(data[i]["divided"][now_is])
-                    # if previos:
-                    #     response[days_name.get(i)].append(data[i]["divided"][previos_week])
-            except (KeyError, TypeError):
-                pass
-            
-    else:
-        now_is = previos_week
-        group_now_week(data, previos=False)
-            
-            
-    return now_is or "Неизвестная неделя", response
-        
-    # elif previos:
-    #     previos_response = response[0]
-    #     now_response = response[1]
-    #     now_data = {}
-    #     previos_data = {}
-        
-
-    #     for i in previos_response:
-    #         try:
-    #             if now_is in data[i]["divided"]:
-    #                 previos_data[days_name.get(i)] = data[i]["divided"][previos_week]
-    #         except (KeyError, TypeError):
-    #             pass
-            
-    # for i in now_response:
-    #     try:
-    #             if now_is in data[i]["divided"]:
-    #                 now_data[days_name.get(i)] = data[i]["divided"][now_is]
-    #         except (KeyError, TypeError):
-    #             pass
-            
-    #     return now_is or "Неизвестная неделя", now_data, previos_week or "Неизвестная неделя", previos_data
-        
-def group_now_week_previos(data: Dict[int, Dict[int, List[Dict[str, Any]]]]) -> Tuple[str, Dict]:
-    return group_now_week(data, previos=True)
-
 print(mapping.get(week_passed % 4, "Неизвестная неделя"))

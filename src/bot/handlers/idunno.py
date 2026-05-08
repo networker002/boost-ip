@@ -1,13 +1,21 @@
 import asyncio
-from aiogram import Bot, Router, F
+from aiogram import Bot, Router, F, types
 from aiogram.types import Message
 from aiogram.filters import BaseFilter, StateFilter
 from aiogram.enums import ChatAction
+from aiogram.utils.keyboard import InlineKeyboardBuilder
+from aiogram.types import InlineKeyboardButton, WebAppInfo
 
 from utils.command_list import get_command_list_text as get
 
 router = Router()
 c_list = [cmd.strip().lower() for cmd in get().split("\n") if cmd.strip()]
+
+builder = InlineKeyboardBuilder()
+builder.row(InlineKeyboardButton(
+        text="Открыть дневник", 
+        web_app=WebAppInfo(url="https://networker002.github.io/webapp/")
+    ))
 
 class IdontKnowFilter(BaseFilter):
     
@@ -26,4 +34,9 @@ async def idunno(message: Message, bot: Bot):
 
 @router.message(F.sticker)
 async def and_st(message: Message):
-    await message.reply_sticker("CAACAgEAAxkBAAEDxJ9p_H-sHzRDLViWdK25rTuo9BW2vQACbQsAAsWd6EcFQyNMZqcYpTsE")
+    s_id = "CAACAgEAAxkDAAIC02n8kf4y4mOHy7Ve0F7Q_NsFCS7SAAJtCwACxZ3oRwVDI0xmpxilOwQ"
+    if message.sticker.file_id != s_id:
+        await message.react([types.ReactionTypeEmoji(emoji="👍")])
+        await message.reply_sticker(s_id)
+    elif message.sticker.file_id == s_id:
+        await message.reply("Нет. Это мой стикер!\nЛучше посмотри расписание 👌", reply_markup=builder.as_markup())

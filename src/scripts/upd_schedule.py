@@ -80,7 +80,7 @@ async def check_groups():
         return groups, created_at_str
     else:
         print("Groups data is outdated or missing, fetching new data...")
-        async with httpx.AsyncClient(verify=False, timeout=15.0, ) as client:
+        async with httpx.AsyncClient(verify=False, timeout=15.0 ) as client:
             
             response = await client.get(url_grs, headers={"User-Agent": random.choice(user_agents)})
         if response.status_code == 200:
@@ -104,7 +104,7 @@ async def update_schedule():
         ua =  random.choice(user_agents)
         print(f"[{datetime.datetime.now().hour}:{datetime.datetime.now().minute}:{datetime.datetime.now().second}] Updating schedule for group: {group}\n User-Agent: {ua}")
         url_group = f"{url_gr}data?group={group}"
-        async with httpx.AsyncClient(verify=False, timeout=15.0, ) as client:
+        async with httpx.AsyncClient(verify=False, timeout=15.0 ) as client:
 
             response = await client.get(url_group, headers={"User-Agent": ua})
 
@@ -137,13 +137,13 @@ async def update_schedule():
                     3: 2
                     }
                     
-                    old_ct = """"""
+                    old_ct = {"Data":[]}
 
                     week_passed = (now - start).days // 7
                     #print(schedule_json.get("Data", []))
                     for day in schedule_json["Data"]:
-                        if day["DayNumber"] == mp.get((week_passed-1)%4):
-                            old_ct += day
+                        if day["DayNumber"] == mp.get((week_passed)%4):
+                            old_ct["Data"].append(day)
                     if old_data.data and old_data.data[0].get("old_content") != schedule_json:
                         #print(f"Old content for {group} has changed.")
                         supabase.table("schedule_updates").update({"old_content": old_ct, "last_checked": datetime.datetime.now().isoformat(),}).eq("group_name", group).execute()
