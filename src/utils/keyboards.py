@@ -1,5 +1,6 @@
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup, WebAppInfo
-from typing import Optional
+from aiogram.utils.keyboard import InlineKeyboardBuilder
+import random
 
 def get_commands_kb() -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup(inline_keyboard=[
@@ -63,19 +64,84 @@ def profile_kb() -> InlineKeyboardMarkup:
     ] 
     return InlineKeyboardMarkup(inline_keyboard=buttons)
 
-def swipe_schedule_kb(prev_week:str, next_week:str, prev_data: str = "prev_week", next_data: str = "next_week") -> InlineKeyboardMarkup:
+def swipe_schedule_kb(prev_week:str, next_week:str, prev_data: str = "prev_week", next_data: str = "next_week") -> InlineKeyboardBuilder:
+    builder = InlineKeyboardBuilder()
+    t = ["📩",
+        "📥",
+        "🗓",
+        "📚",
+        "📎",
+        "📝"]
+    tr = random.choice(t)
     if not prev_week:
-        buttons = [
-            [InlineKeyboardButton(text=next_week+" ➡️", callback_data=next_data)]
-        ]
+        builder.add(
+        InlineKeyboardButton(text=next_week+" ➡️", callback_data=next_data)
+        )
+        builder.add(
+            InlineKeyboardButton(text=tr+" Скачать расписание", callback_data="download_schedule")
+        )
+        builder.adjust(1, 1)
     elif not next_week:
-        buttons = [
-            [InlineKeyboardButton(text="⬅️ "+prev_week, callback_data=prev_data)]
-        ]
+        builder.add(
+            InlineKeyboardButton(text="⬅️ "+prev_week, callback_data=prev_data)
+        )
+        builder.add(
+            InlineKeyboardButton(text=tr+" Скачать расписание", callback_data="download_schedule")
+        )
+        builder.adjust(1, 1)
     else:
-        buttons = [
-            [InlineKeyboardButton(text="⬅️ "+prev_week, callback_data=prev_data)],
-            [InlineKeyboardButton(text=next_week+" ➡️", callback_data=next_data)]
-        ]
+        builder.add(
+            InlineKeyboardButton(text="⬅️ "+prev_week, callback_data=prev_data)
+        )
+        
+        builder.add(
+        InlineKeyboardButton(text=next_week+" ➡️", callback_data=next_data)
+        )
+        
+        builder.add(
+            InlineKeyboardButton(text=tr+" Скачать расписание", callback_data="download_schedule")
+        )
+        builder.adjust(2, 1)
+
+    return builder.as_markup()
+
+def dwn_days_kb(schedule: list, selected_days: list = None) -> InlineKeyboardMarkup:
+    builder = InlineKeyboardBuilder()
+    if selected_days is None:
+        selected_days = []
+
+    if schedule:
+        for week_index, week in enumerate(schedule):
+            for day in week:
+                day_str = str(day)
+                is_selected = day_str in selected_days
+                text = f"✅" if is_selected else day_str
+                
+                builder.add(InlineKeyboardButton(
+                    text=text, 
+                    callback_data=f"add_{day_str}")
+                )
+            
+            builder.add(InlineKeyboardButton(
+                text="ВСЕ", 
+                callback_data=f"all_{week_index}")
+            )
+            
+    builder.add(InlineKeyboardButton(text="✔ Применить", callback_data="download_new_sc"))
+    builder.add(InlineKeyboardButton(text="Отменить", callback_data="cancel_add"))
+    builder.adjust(*(7 for _ in range(len(schedule))), 1, 1)
+        
+    return builder.as_markup()
+
+def go_or_back_kb() -> InlineKeyboardMarkup:
+    builder = InlineKeyboardBuilder()
     
-    return InlineKeyboardMarkup(inline_keyboard=buttons)
+    builder.add(InlineKeyboardButton(text="Экспорт HTML", callback_data="schedule_html"))
+    builder.add(InlineKeyboardButton(text="Экспорт EXEL", callback_data="schedule_exel"))
+    builder.add(InlineKeyboardButton(text="Экспорт TXT", callback_data="schedule_txt"))
+    builder.add(InlineKeyboardButton(text="Экспорт картинкой", callback_data="schedule_img"))
+    builder.add(InlineKeyboardButton(text="Назад", callback_data="download_schedule"))
+    
+    builder.adjust(1,1,1,1)
+    
+    return builder.as_markup()

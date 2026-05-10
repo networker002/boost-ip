@@ -1,6 +1,6 @@
 import json
 import logging
-import requests as req
+# import requests as req
 from collections import defaultdict
 from typing import Dict, List, Any, TypedDict, Optional, Tuple
 import os, sys
@@ -8,15 +8,15 @@ from pathlib import Path
 sys.path.append(os.path.join(os.path.dirname(__file__), '../..'))
 from services import get_weeks
 from services.db.client import supabase
-import random
+# import random
 from pathlib import Path
 import asyncio
 
 
-proxies = {
-    "http": os.environ.get('MIET_PROXY'),
-    "https": os.environ.get('MIET_PROXY')
-}
+# proxies = {
+#     "http": os.environ.get('MIET_PROXY'),
+#     "https": os.environ.get('MIET_PROXY')
+# }
 
 class Lesson(TypedDict):
     time: str
@@ -52,17 +52,17 @@ class Schedule():
                 d = json.load(f)
                 
             return d
-            try:
-                ua = random.choice(self.data_ua)
-                headers={"User-Agent":ua}
-            except Exception: headers = None
-            resp = req.get(url=self.url + "'", headers=headers, proxies=(proxies if os.environ.get("MIET_PROXY") else None))
-            if resp.status_code == 200:
-                Data = resp.json()
-                return Data  # {Times:...}
-            else: 
-                print(f"Failed to fetch schedule data. Status code: {resp.status_code}")
-                return None
+            # try:
+            #     ua = random.choice(self.data_ua)
+            #     headers={"User-Agent":ua}
+            # except Exception: headers = None
+            # resp = req.get(url=self.url + "'", headers=headers, proxies=(proxies if os.environ.get("MIET_PROXY") else None))
+            # if resp.status_code == 200:
+            #     Data = resp.json()
+            #     return Data  # {Times:...}
+            # else: 
+            #     print(f"Failed to fetch schedule data. Status code: {resp.status_code}")
+            #     return None
         except Exception as e:
             print(e)
             return None

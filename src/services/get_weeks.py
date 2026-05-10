@@ -26,6 +26,18 @@ now_is = mapping.get(week_passed % 4, "Неизвестная неделя")
 prev = mapping.get((week_passed - 1) % 4, "Неизвестная неделя")
 next = mapping.get((week_passed + 1) % 4, "Неизвестная неделя")
 
+def get_week_range(monday_date):
+    return [(monday_date + datetime.timedelta(days=i)).strftime('%d.%m') for i in range(6)]
+
+def get_range():
+    today = datetime.datetime.now().date()
+    current_monday = today - datetime.timedelta(days=today.weekday())
+
+    last_week = get_week_range(current_monday - datetime.timedelta(days=7))
+    current_week = get_week_range(current_monday)
+    next_week = get_week_range(current_monday + datetime.timedelta(days=7))
+    return [last_week, current_week, next_week]
+
 def group_now_week(data: Dict[int, Dict[str, Any]], week_type: Optional[str] = None) -> Tuple[str, Dict[str, List[Dict[str, Any]]]]:
     if week_type is None:
         week_type = now_is

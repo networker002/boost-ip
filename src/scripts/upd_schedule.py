@@ -142,7 +142,7 @@ async def update_schedule():
                     week_passed = (now - start).days // 7
                     #print(schedule_json.get("Data", []))
                     for day in schedule_json["Data"]:
-                        if day["DayNumber"] == mp.get((week_passed)%4):
+                        if day["DayNumber"] ==(week_passed-1)%4:
                             old_ct["Data"].append(day)
                     if old_data.data and old_data.data[0].get("old_content") != schedule_json:
                         #print(f"Old content for {group} has changed.")
