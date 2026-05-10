@@ -305,9 +305,11 @@ async def handle_all_week_selection(callback: types.CallbackQuery, state: FSMCon
     await callback.answer()
     
 @router.callback_query(F.data.startswith("schedule_"))
-async def dwn(callback: types.CallbackQuery, state: FSMContext):
+async def dwn(callback: types.CallbackQuery, state: FSMContext, bot: Bot):
     user_id = callback.from_user.id
     res = await check_user_group(user_id)
+    done = False
+
     
     if res is None:
         await _safe_edit_text(
@@ -434,6 +436,7 @@ async def dwn(callback: types.CallbackQuery, state: FSMContext):
             caption=f"Расписание для {group_name}"
         )
         await callback.answer("Скачано!")
+        done = True
         
     if callback.data.endswith("txt"):
         path = io.BytesIO()
@@ -448,6 +451,7 @@ async def dwn(callback: types.CallbackQuery, state: FSMContext):
             caption=f"Расписание для {group_name}"
         )
         await callback.answer("Скачано!")
+        done = True
     
     if callback.data.endswith("exel"):
         from openpyxl import Workbook
@@ -558,31 +562,126 @@ async def dwn(callback: types.CallbackQuery, state: FSMContext):
             caption=f"Расписание для {group_name}"
         )  
         await callback.answer("Скачано!")
+        done = True
         
     if callback.data.endswith("img"):
-        from html2image import Html2Image
-        hti = Html2Image(custom_flags=['--no-sandbox', '--disable-gpu'])
+        from PIL import Image, ImageDraw, ImageFont
+        import textwrap
 
-        
-        img_html = new_HTML.replace("animation: w 2s forwards;", "top: 1rem;")
-        
-        path_to_img = f"temp_schedule_{user_id}.png"
-        
+        await callback.answer("Рисую расписание...")
+
         try:
+            font_title = ImageFont.truetype("arial.ttf", 28)
+            font_week = ImageFont.truetype("arial.ttf", 22)
+            font_day = ImageFont.truetype("arial.ttf", 20)
+            font_text = ImageFont.truetype("arial.ttf", 18)
+            font_small = ImageFont.truetype("arial.ttf", 14)
+        except OSError:
+            font_title = font_week = font_day = font_text = font_small = ImageFont.load_default()
 
-            hti.screenshot(html_str=img_html, save_as=path_to_img, size=(1920, 2000))
+        responses = [response1, response2, response3]
+        
+        media_list = []
+        
+        for idx, response in enumerate(responses):
+            if not response: continue
+                
+            week_name, days_data = response
+            current_week_dates = all_dates[idx] if idx < len(all_dates) else []
+
+
+            valid_days_to_draw = []
+            for day_idx, (day_name, lessons) in enumerate(days_data.items()):
+                date_str = current_week_dates[day_idx] if day_idx < len(current_week_dates) else ""
+                if req_days and date_str not in req_days:
+                    continue
+                valid_days_to_draw.append((day_name, date_str, lessons))
+
+
+            if not valid_days_to_draw:
+                continue
+
+
+            width = 1200 
+
+            temp_img = Image.new('RGB', (width, 5000), color='#f4f7f2')
+            draw = ImageDraw.Draw(temp_img)
             
-            with open(path_to_img, 'rb') as photo:
-                await callback.message.answer_photo(
-                    photo=types.BufferedInputFile(photo.read(), filename="schedule.png"),
-                    caption=f"📸 Расписание для {group_name}"
-                )
+            y = 20
+            draw.text((20, y), f"Расписание: {group_name}", fill="#2d3436", font=font_title)
+            y += 60
+
+            draw.rounded_rectangle([20, y, width-20, y+45], radius=8, fill="#27AE60")
+            draw.text((40, y+10), str(week_name), fill="white", font=font_week)
+            y += 70
+
+            col_x = [20, 610]
+            col_w = 570
+            col_y = [y, y]
             
-            import os
-            os.remove(path_to_img)
-            
-            await callback.answer("Картинка готова!")
-            
-        except Exception as e:
-            print(f"Image generation error: {e}")
-            await callback.answer("Ошибка при создании картинки", show_alert=True)
+            for d_idx, (day_name, date_str, lessons) in enumerate(valid_days_to_draw):
+                c_idx = d_idx % 2
+                c_x = col_x[c_idx]
+
+                draw.rounded_rectangle([c_x, col_y[c_idx], c_x + col_w, col_y[c_idx]+35], radius=6, fill="#D5F5E3")
+                draw.text((c_x + 20, col_y[c_idx] + 5), f"{day_name} ({date_str})", fill="#1D8348", font=font_day)
+                col_y[c_idx] += 45
+
+                if not lessons:
+                    draw.text((c_x + 20, col_y[c_idx]), "Пар нет", fill="#7F8C8D", font=font_text)
+                    col_y[c_idx] += 40
+                else:
+                    for lesson in lessons:
+                        t_code = int(lesson.get("time_code", 0))
+                        t_range = codes.get(t_code, ("??:??", "??:??"))
+                        time_str = f"⏳ {t_range[0]} - {t_range[1]}"
+                        
+                        draw.text((c_x + 20, col_y[c_idx]), time_str, fill="#34495E", font=font_text)
+                        col_y[c_idx] += 25
+                        
+                        subj = f"📚 {lesson.get('subject', '---')} ({lesson.get('room', '-')})"
+                        wrapped_subject = textwrap.wrap(subj, width=40) 
+                        for line in wrapped_subject:
+                            draw.text((c_x + 40, col_y[c_idx]), line, fill="#2d3436", font=font_text)
+                            col_y[c_idx] += 25
+                        
+                        teacher = f"👨‍🏫 {lesson.get('teacher', '---')}"
+                        draw.text((c_x + 40, col_y[c_idx]), teacher, fill="#7F8C8D", font=font_small)
+                        col_y[c_idx] += 25
+                        
+                        draw.line([c_x + 20, col_y[c_idx], c_x + col_w - 20, col_y[c_idx]], fill="#BDC3C7", width=1)
+                        col_y[c_idx] += 15
+                
+                col_y[c_idx] += 20 
+
+
+            final_y = max(col_y[0], col_y[1]) + 20 
+            week_img = temp_img.crop((0, 0, width, max(final_y, 300)))
+
+            path = io.BytesIO()
+            week_img.save(path, format='PNG')
+            path.seek(0)
+            file = types.BufferedInputFile(path.getvalue(), filename=f"week_{idx+1}.png")
+            media_list.append(types.InputMediaPhoto(
+                media=file,
+                caption=f"📅 Расписание\nГруппа: <b>{group_name}</b>" if len(media_list) == 0 else "", 
+                parse_mode="HTML"
+            ))
+            # await callback.message.answer_photo(
+            #     photo=types.BufferedInputFile(path.getvalue(), filename=f"week_{idx+1}.png"),
+            #     caption=f"📅 {week_name}\nГруппа: <b>{group_name}</b>",
+            #     parse_mode="HTML"
+            # )
+        if media_list:
+            await callback.message.answer_media_group(media=media_list)
+            await callback.answer("Расписание готово!")
+        else:
+            await callback.answer("Нет данных для вывода", show_alert=True)
+
+        await callback.answer("Готово!")
+        done = True
+        
+    if done:
+        if state:
+            await state.clear()
+        await _get_schedule_logic(callback.message, callback.from_user.id, bot=bot, sent_message=callback.message)

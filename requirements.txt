@@ -14,5 +14,4 @@ python-dotenv
 fastapi
 uvicorn
 requests[socks]
-html2image
 openpyxl
