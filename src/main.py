@@ -235,6 +235,8 @@ async def get_group(request: fastapi.Request):
     data = await user_group.check_user_group(auth_data["user"]["id"])
     if data:
         return data
+    else:
+        return fastapi.Response(None, 404)
 
 
 @app.get("/schedule")
