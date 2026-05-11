@@ -19,6 +19,20 @@ class ScheduleState(StatesGroup):
 
 mrkp = None
 
+codes = {}
+try:
+    config_path = Path(__file__).parent.parent.parent.parent / "config" / "example-time.json"
+    with open(config_path, encoding="utf-8") as f:
+        data_ = json.load(f)
+            #print(data)
+        for c in data_["Times"]:
+                codes[c["Code"]] = (
+                    c["TimeFrom"][-8:-3],
+                    c["TimeTo"][-8:-3],
+                )
+except FileNotFoundError:
+    print("example-time.json not found :(")
+
 @router.message(Command("schedule"))
 async def cmd_get_schedule(message: types.Message, bot: Bot):
     await _get_schedule_logic(message, message.from_user.id, bot)
@@ -76,19 +90,6 @@ async def _get_schedule_logic(message: types.Message, user_id: int, bot: Bot, we
         print("Schedule error:", e)
         response1, response2, response3 = None, None, None
 
-    codes = {}
-    try:
-        config_path = Path(__file__).parent.parent.parent.parent / "config" / "example-time.json"
-        with open(config_path, encoding="utf-8") as f:
-            data = json.load(f)
-            #print(data)
-            for c in data["Times"]:
-                codes[c["Code"]] = (
-                    c["TimeFrom"][-8:-3],
-                    c["TimeTo"][-8:-3],
-                )
-    except FileNotFoundError:
-        print("example-time.json not found :(")
     # print(80)
     # print(response)
     #print(codes)
@@ -259,7 +260,7 @@ async def cancel_add(callback: types.CallbackQuery, state: FSMContext, bot: Bot)
 @router.callback_query(F.data.startswith("add_"))
 async def handle_day_selection(callback: types.CallbackQuery, state: FSMContext):
     clicked_day = callback.data.replace("add_", "")
-
+    await callback.answer()
     data = await state.get_data()
     selected_days = data.get("selected_days", [])
     
@@ -273,7 +274,7 @@ async def handle_day_selection(callback: types.CallbackQuery, state: FSMContext)
     new_kb = keyboards.dwn_days_kb(get_weeks.get_range(), selected_days=selected_days)
     
     await callback.message.edit_reply_markup(reply_markup=new_kb)
-    await callback.answer()
+
     
     
 @router.callback_query(F.data.startswith("all_"))
@@ -326,20 +327,6 @@ async def dwn(callback: types.CallbackQuery, state: FSMContext, bot: Bot):
     except Exception as e:
         print("Schedule error:", e)
         response1, response2, response3 = None, None, None
-        
-    codes = {}
-    try:
-        config_path = Path(__file__).parent.parent.parent.parent / "config" / "example-time.json"
-        with open(config_path, encoding="utf-8") as f:
-            data = json.load(f)
-            #print(data)
-            for c in data["Times"]:
-                codes[c["Code"]] = (
-                    c["TimeFrom"][-8:-3],
-                    c["TimeTo"][-8:-3],
-                )
-    except FileNotFoundError:
-        print("example-time.json not found :(")
         
     all_dates = get_weeks.get_range()
     all_dates_clear = []
