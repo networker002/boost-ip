@@ -1,3 +1,5 @@
+import random
+
 from aiogram import Router, types, F, Bot
 from aiogram.filters import Command
 from aiogram.fsm.state import State, StatesGroup
@@ -235,11 +237,10 @@ async def give_info_days(callback: types.CallbackQuery, state: FSMContext):
 async def rem(callback: types.CallbackQuery, state: FSMContext):
     data = await state.get_data()
     data:list = data.get('selected_days') if data else "Ничего не выбрано"
-    print(data)
+    # print(data)
     if data != "Ничего не выбрано" and len(data) > 0:
         data = ', '.join(data)
-    
-        
+        await callback.answer()
         group = await check_user_group(callback.from_user.id)
         text = f"""<b>Скачать расписание для группы {group.get("group_name") if group else ""}</b>\n\n{data}"""
         await _safe_edit_text(callback.message, text=text, parse_mode="HTML", reply_markup=keyboards.go_or_back_kb())
@@ -404,26 +405,12 @@ async def dwn(callback: types.CallbackQuery, state: FSMContext, bot: Bot):
                 if d == key_day:
                     need_data += day_data
         need_data += "</div>"
-        
-    new_HTML = """<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Расписание</title><link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto"><style> * { margin: 0; padding: 0; font-family: 'Roboto', serif; } header { background: #85d44f; box-shadow: inset 8px 8px 8px #a3d1ad6c, inset -8px -8px 8px #bae27960; text-align: center; margin: auto; padding: .5rem; position: sticky; transition: background .5s ease, width 1s, transform 1s; backdrop-filter: blur(6px); border-radius: 30px; width: calc(100% - 2rem); top: 0; animation: w 2s forwards; z-index: 1000000; h1 { letter-spacing: 2px; color: #fff; } } body { background: linear-gradient(to bottom, #fdf9f9, #edfff6); } @keyframes w { 100% { transform: translateY(1rem); } } main { display: grid; grid-template-rows: repeat(3, 1fr); } :root { --bg-week: #f4f7f2; --bg-day: #ffffff; --accent-color: #4CAF50; --text-main: #2d3436; --text-secondary: #636e72; --border-color: #e0eadd; --shadow: 0 4px 15px rgba(0, 0, 0, 0.05);} .week { background: var(--bg-week); display: flex; gap: 15px; padding: 2em; margin: 1em auto; border-radius: 20px; overflow-x: auto; } .day { background: var(--bg-day); padding: 1.5em; flex: 1; min-width: 200px; border-radius: 16px; box-shadow: var(--shadow); transition: box-shadow 0.2s ease; border: 1px solid var(--border-color); cursor: pointer; &:hover { box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15); } h2 { color: var(--accent-color); text-align: center; margin: -1.5em -1.5em 1em -1.5em; padding: 1em 0; background: rgba(76, 175, 80, 0.08); border-radius: 16px 16px 0 0; font-size: 1.2em; text-transform: uppercase; letter-spacing: 1.5px; } h4 { color: var(--text-main); font-size: 1rem; margin-top: 1.2em; padding-top: 0.8em; border-top: 1px dashed var(--border-color); display: flex; justify-content: space-between; align-items: center; } h5 { color: var(--text-secondary); font-weight: 400; font-size: 0.9rem; margin-top: 0.3em; line-height: 1.4; } h6 { font-weight: 500; font-size: small; font-style: italic; } } @media (max-width:1440px) { main{ display: flex;} .week{flex-direction:column;} } @media (max-width:1024px) { main {display: grid; grid-template-columns: 1fr 1fr !important;} }  @media (max-width:1024px) { main {display: grid; grid-template-columns: 1fr !important;} .day {pointer-events:none}} </style></head><body><header><h1>Расписание</h1><object id="nowDateFull" style="color: #d4ffdf; font-weight: 700; letter-spacing: 1px;"></object><script> window.addEventListener("scroll", function(){ if (window.scrollY >= 50) { document.querySelector("header").style.background = "#84d44fa2";document.querySelector("header").style.width = "80%"} else { document.querySelector("header").style.background = "#85d44f"; document.querySelector("header").style.width = "calc(100% - 2rem)" } }); var d=new Date(),n=d.getDay(),m=d.getMonth(),dt=d.getDate(),days={1:"Понедельник",2:"Вторник",3:"Среда",4:"Четверг",5:"Пятница",6:"Суббота",7:"Воскресенье"},months={0:"января",1:"февраля",2:"марта",3:"апреля",4:"мая",5:"июня",6:"июля",7:"августа",8:"сентября",9:"октября",10:"ноября",11:"декабря"},dayCall=days[n]??"Воскресенье",full=dayCall+", "+dt+" "+(months[m]??0);document.getElementById("nowDateFull").innerHTML=full;document.querySelectorAll(".day").forEach(el=>{if(el.innerHTML===dayCall)el.classList.add("now")}); window.addEventListener("DOMContentLoaded", function () {document.querySelectorAll(".week").forEach((w) => {if (w.innerHTML.length == 0) {w.remove()}})})</script></header><main>""" + need_data + "</main></body></html>"
-        
+
     
     if callback.data.endswith("html"):
-    
+        await _safe_edit_text(callback.message, "<b>Финальный шаг!</b>\n\nВыберите темы:", parse_mode="HTML", reply_markup=keyboards.styles_choise_kb())
         
-        path = io.BytesIO()
-        path.write(new_HTML.encode("utf-8"))
-        path.seek(0)
-        await callback.answer("Файл готов. Отправка...")
-        await callback.message.answer_document(
-            document=types.BufferedInputFile(
-                path.getvalue(),
-                filename=f"schedule_{group_name}.html"
-            ),
-            caption=f"Расписание для {group_name}"
-        )
-        await callback.answer("Скачано!")
-        done = True
+        
         
     if callback.data.endswith("txt"):
         path = io.BytesIO()
@@ -669,6 +656,145 @@ async def dwn(callback: types.CallbackQuery, state: FSMContext, bot: Bot):
         await callback.answer("Готово!")
         done = True
         
+    if done:
+        if state:
+            await state.clear()
+        await _get_schedule_logic(callback.message, callback.from_user.id, bot=bot, sent_message=callback.message)
+        
+@router.callback_query(F.data.startswith("html_"))
+async def send_schedule(callback: types.CallbackQuery, state: FSMContext, bot: Bot):
+    user_id = callback.from_user.id
+    res = await check_user_group(user_id)
+    done = False
+    
+    all_dates = get_weeks.get_range()
+    all_dates_clear = []
+    
+    data = await state.get_data()
+    req_days = data["selected_days"] if data else []
+    
+    try:
+        group_name = res.get("group_name")
+        # response = schedule.Schedule(group_name=group_name).run_()
+        response1, response2, response3 = await schedule.Schedule(group_name=group_name).get_schedule_async(prev_next=True)
+        #print(63)
+    except Exception as e:
+        print("Schedule error:", e)
+        response1, response2, response3 = None, None, None
+    
+    theme = callback.data.split("_")[1]
+    
+    
+    st_HTML = []
+    
+    st_cfg = {} #html
+    st_cfg_txt = {} #txt
+    
+    
+    for idx, response in enumerate([response1, response2, response3]):
+        
+        current_week_by_dates = all_dates[idx]
+        week_name, days_data = response
+
+        st_cfg[week_name] = {}
+        
+        
+        for day_idx, (dayN, dayC) in enumerate(days_data.items()):
+            stringHTML = """"""
+            stringTXT = """"""
+            # if dayN == "Понедельник":
+            #     stringHTML += "<div class='week'>"
+            stringTXT += f"\t📆 {dayN} {current_week_by_dates[day_idx] if  day_idx < len(current_week_by_dates) else ""}\n"
+            stringHTML += "<div class='day'>"
+            stringHTML += f"<br><h2>{dayN}{"<br>"+ current_week_by_dates[day_idx] if  day_idx < len(current_week_by_dates) else ""}</h2>"
+            
+            if not dayC:
+                stringHTML += "<p>Занятий нет</p>"
+                stringTXT += "\nЗанятий нет\n"
+            else:
+                for lesson in dayC:
+                    time_code = int(lesson["time_code"])
+                    time_range = codes.get(time_code, ("", ""))
+
+                    stringHTML += (
+                        f"<h4>{lesson['time']}</h4>"
+                        f"<h5>{time_range[0]} - {time_range[1]}</h5>"
+                        f"<h6>{lesson['teacher']}</h6>"
+                        f"<p>{lesson['subject']} <span>({lesson['room']})</span></p>"
+                    )
+                    
+                    stringTXT += (
+                        f"\n{lesson['time']}\n"
+                        f"  {time_range[0]} - {time_range[1]}\n"
+                        f"  {lesson['teacher']}\n"
+                        f"  {lesson['subject']} ({lesson['room']})\n"
+                    )
+            stringHTML += "</div>"
+            stringTXT += "\n"
+            
+            if day_idx < len(current_week_by_dates):
+                date_key = current_week_by_dates[day_idx]
+                st_cfg[week_name][date_key] = stringHTML
+                
+
+        full_week_html = "<div class='week'>" + "".join(st_cfg[week_name].values()) + "</div>"
+        st_HTML.append(full_week_html)
+
+    need_data = """"""
+    for week, data in st_cfg.items():
+        need_data += "<div class='week'>"
+        for key_day, day_data in data.items():
+            for d in req_days:
+                if d == key_day:
+                    need_data += day_data
+        need_data += "</div>"
+    
+    
+    style_GREEN = """<style> * { margin: 0; padding: 0; font-family: 'Roboto', serif; } header { background: #85d44f; box-shadow: inset 8px 8px 8px #a3d1ad6c, inset -8px -8px 8px #bae27960; text-align: center; margin: auto; padding: .5rem; position: sticky; transition: background .5s ease, width 1s, transform 1s; backdrop-filter: blur(6px); border-radius: 30px; width: calc(100% - 2rem); top: 0; animation: w 2s forwards; z-index: 1000000; h1 { letter-spacing: 2px; color: #fff; } } body { background: linear-gradient(to bottom, #fdf9f9, #edfff6); } @keyframes w { 100% { transform: translateY(1rem); } } main { display: grid; grid-template-rows: repeat(3, 1fr); } :root { --bg-week: #f4f7f2; --bg-day: #ffffff; --accent-color: #4CAF50; --text-main: #2d3436; --text-secondary: #636e72; --border-color: #e0eadd; --shadow: 0 4px 15px rgba(0, 0, 0, 0.05);} .week { background: var(--bg-week); display: flex; gap: 15px; padding: 2em; margin: 1em auto; border-radius: 20px; overflow-x: auto; } .day { background: var(--bg-day); padding: 1.5em; flex: 1; min-width: 200px; border-radius: 16px; box-shadow: var(--shadow); transition: box-shadow 0.2s ease; border: 1px solid var(--border-color); cursor: pointer; &:hover { box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15); } h2 { color: var(--accent-color); text-align: center; margin: -1.5em -1.5em 1em -1.5em; padding: 1em 0; background: rgba(76, 175, 80, 0.08); border-radius: 16px 16px 0 0; font-size: 1.2em; text-transform: uppercase; letter-spacing: 1.5px; } h4 { color: var(--text-main); font-size: 1rem; margin-top: 1.2em; padding-top: 0.8em; border-top: 1px dashed var(--border-color); display: flex; justify-content: space-between; align-items: center; } h5 { color: var(--text-secondary); font-weight: 400; font-size: 0.9rem; margin-top: 0.3em; line-height: 1.4; } h6 { font-weight: 500; font-size: small; font-style: italic; } } @media (max-width:1440px) { main{ display: flex;} .week{flex-direction:column;} } @media (max-width:1024px) { main {display: grid; grid-template-columns: 1fr 1fr !important;} }  @media (max-width:1024px) { main {display: grid; grid-template-columns: 1fr !important;} .day {pointer-events:none}} </style>"""    
+    script_GREEN = """<script> window.addEventListener("scroll", function(){ if (window.scrollY >= 50) { document.querySelector("header").style.background = "#84d44fa2";document.querySelector("header").style.width = "80%"} else { document.querySelector("header").style.background = "#85d44f"; document.querySelector("header").style.width = "calc(100% - 2rem)" } }); var d=new Date(),n=d.getDay(),m=d.getMonth(),dt=d.getDate(),days={1:"Понедельник",2:"Вторник",3:"Среда",4:"Четверг",5:"Пятница",6:"Суббота",7:"Воскресенье"},months={0:"января",1:"февраля",2:"марта",3:"апреля",4:"мая",5:"июня",6:"июля",7:"августа",8:"сентября",9:"октября",10:"ноября",11:"декабря"},dayCall=days[n]??"Воскресенье",full=dayCall+", "+dt+" "+(months[m]??0);document.getElementById("nowDateFull").innerHTML=full;document.querySelectorAll(".day").forEach(el=>{if(el.innerHTML===dayCall)el.classList.add("now")}); window.addEventListener("DOMContentLoaded", function () {document.querySelectorAll(".week").forEach((w) => {if (w.innerHTML.length == 0) {w.remove()}})})</script>"""
+    
+    style_BLUE = """<style> * { margin: 0; padding: 0; font-family: 'Roboto', serif; } header { background: #367ed1; box-shadow: inset 8px 8px 12px #14e4ff4d, inset -8px -8px 12px #3717c72d; text-align: center; margin: auto; padding: .5rem; position: sticky; transition: background .5s ease, width 1s, transform 1s; backdrop-filter: blur(6px); border-radius: 30px; width: calc(100% - 2rem); top: 0; animation: w 2s forwards; z-index: 1000000; h1 { letter-spacing: 2px; color: #fff; } } body { background: linear-gradient(to bottom, #f9fcfd, #d4e4dc); } @keyframes w { 100% { transform: translateY(1rem); } } main { display: grid; grid-template-rows: repeat(3, 1fr); } :root { --bg-week: #bed3da; --bg-day: #ffffff; --accent-color: #3f87e6; --text-main: #2d3436; --text-secondary: #527785; --border-color: #b6b1cf; --shadow: 0 4px 15px rgba(0, 0, 0, 0.075); } .week { background: var(--bg-week); display: flex; gap: 15px; padding: 2em; margin: 1em auto; border-radius: 20px; overflow-x: auto; } .day { background: var(--bg-day); padding: 1.5em; flex: 1; min-width: 200px; border-radius: 16px; box-shadow: var(--shadow); transition: box-shadow 0.2s ease; border: 1px solid var(--border-color); cursor: pointer; &:hover { box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15); } h2 { color: var(--accent-color); text-align: center; margin: -1.5em -1.5em 1em -1.5em; padding: 1em 0; background: rgba(76, 111, 175, 0.08); border-radius: 16px 16px 0 0; font-size: 1.2em; text-transform: uppercase; letter-spacing: 1.5px; } h4 { color: var(--text-main); font-size: 1rem; margin-top: 1.2em; padding-top: 0.8em; border-top: 1px dashed var(--border-color); display: flex; justify-content: space-between; align-items: center; } h5 { color: var(--text-secondary); font-weight: 400; font-size: 0.9rem; margin-top: 0.3em; line-height: 1.4; } h6 { font-weight: 500; font-size: small; font-style: italic; } } @media (max-width:1440px) { main { display: flex; } .week { flex-direction: column; } } @media (max-width:1024px) { main { display: grid; grid-template-columns: 1fr 1fr !important; } } @media (max-width:1024px) { main { display: grid; grid-template-columns: 1fr !important; } .day { pointer-events: none } } </style>"""
+    script_BLUE = """<script> window.addEventListener("scroll", function () { if (window.scrollY >= 50) { document.querySelector("header").style.background = "#367ed17e"; document.querySelector("header").style.width = "80%" } else { document.querySelector("header").style.background = "#367ed1"; document.querySelector("header").style.width = "calc(100% - 2rem)" } }); var d = new Date(), n = d.getDay(), m = d.getMonth(), dt = d.getDate(), days = { 1: "Понедельник", 2: "Вторник", 3: "Среда", 4: "Четверг", 5: "Пятница", 6: "Суббота", 7: "Воскресенье" }, months = { 0: "января", 1: "февраля", 2: "марта", 3: "апреля", 4: "мая", 5: "июня", 6: "июля", 7: "августа", 8: "сентября", 9: "октября", 10: "ноября", 11: "декабря" }, dayCall = days[n] ?? "Воскресенье", full = dayCall + ", " + dt + " " + (months[m] ?? 0); document.getElementById("nowDateFull").innerHTML = full; document.querySelectorAll(".day").forEach(el => { if (el.innerHTML === dayCall) el.classList.add("now") }); window.addEventListener("DOMContentLoaded", function () { document.querySelectorAll(".week").forEach((w) => { if (w.innerHTML.length == 0) { w.remove() } }) })</script>"""
+    
+    style_ORANGE = """<style> * { margin: 0; padding: 0; font-family: 'Roboto', serif; } header { background: #ff9800; box-shadow: inset 8px 8px 12px #ffc10766, inset -8px -8px 12px #e651004d; text-align: center; margin: auto; padding: .5rem; position: sticky; transition: background .5s ease, width 1s, transform 1s; backdrop-filter: blur(6px); border-radius: 30px; width: calc(100% - 2rem); top: 0; animation: w 2s forwards; z-index: 1000000; h1 { letter-spacing: 2px; color: #fff; } } body { background: linear-gradient(to bottom, #fffdfa, #ffe0b2); min-height: 100vh; } @keyframes w { 100% { transform: translateY(1rem); } } main { display: grid; grid-template-rows: repeat(3, 1fr); } :root { --bg-week: #ffecb3; --bg-day: #ffffff; --accent-color: #f57c00; --text-main: #4e342e; --text-secondary: #8d6e63; --border-color: #ffe082; --shadow: 0 4px 15px rgba(245, 124, 0, 0.1); } .week { background: var(--bg-week); display: flex; gap: 15px; padding: 2em; margin: 1em auto; border-radius: 20px; overflow-x: auto; } .day { background: var(--bg-day); padding: 1.5em; flex: 1; min-width: 200px; border-radius: 16px; box-shadow: var(--shadow); transition: all 0.3s ease; border: 1px solid var(--border-color); cursor: pointer; &:hover { box-shadow: 0 8px 25px rgba(245, 124, 0, 0.2); transform: translateY(-5px); } h2 { color: var(--accent-color); text-align: center; margin: -1.5em -1.5em 1em -1.5em; padding: 1em 0; background: rgba(255, 152, 0, 0.1); border-radius: 16px 16px 0 0; font-size: 1.2em; text-transform: uppercase; letter-spacing: 1.5px; } h4 { color: var(--text-main); font-size: 1rem; margin-top: 1.2em; padding-top: 0.8em; border-top: 1px dashed var(--border-color); display: flex; justify-content: space-between; align-items: center; } h5 { color: var(--text-secondary); font-weight: 400; font-size: 0.9rem; margin-top: 0.3em; line-height: 1.4; } h6 { font-weight: 500; font-size: small; font-style: italic; } } @media (max-width:1440px) { main { display: flex; } .week { flex-direction: column; } } @media (max-width:1024px) { main { display: grid; grid-template-columns: 1fr 1fr !important; } } @media (max-width:768px) { main { grid-template-columns: 1fr !important; } .day { pointer-events: none } } </style>"""
+    script_ORANGE = """<script> window.addEventListener("scroll", function () { const head = document.querySelector("header"); if (window.scrollY >= 50) { head.style.background = "#ff9800cc"; head.style.width = "85%"; } else { head.style.background = "#ff9800"; head.style.width = "calc(100% - 2rem)"; }}); var d=new Date(),n=d.getDay(),m=d.getMonth(),dt=d.getDate(),days={1:"Понедельник",2:"Вторник",3:"Среда",4:"Четверг",5:"Пятница",6:"Суббота",0:"Воскресенье"},months={0:"января",1:"февраля",2:"марта",3:"апреля",4:"мая",5:"июня",6:"июля",7:"августа",8:"сентября",9:"октября",10:"ноября",11:"декабря"},dayCall=days[n],full=dayCall+", "+dt+" "+months[m];document.getElementById("nowDateFull").innerHTML=full;document.querySelectorAll(".day h2").forEach(el=>{if(el.innerText.trim().toLowerCase()===dayCall.toLowerCase())el.closest(".day").classList.add("now")});window.addEventListener("DOMContentLoaded",function(){document.querySelectorAll(".week").forEach(w=>{if(w.innerText.trim().length==0)w.remove()})});</script>"""
+    
+    style_DARK = """<style> * { margin: 0; padding: 0; font-family: 'Roboto', sans-serif; } header { background: #1e293b; box-shadow: 0 4px 20px rgba(0,0,0,0.4); text-align: center; margin: auto; padding: .5rem; position: sticky; transition: all .5s ease; backdrop-filter: blur(6px); border-radius: 30px; width: calc(100% - 2rem); top: 0; animation: w 2s forwards; z-index: 1000000; border: 1px solid #334155; h1 { letter-spacing: 3px; color: #38bdf8; text-shadow: 0 0 10px rgba(56, 189, 248, 0.3); } } body { background: #000; color: #f1f5f9; } @keyframes w { 100% { transform: translateY(1rem); } } :root { --bg-week: #1e293b9e; --bg-day: linear-gradient(-45deg, black, transparent); --accent-color: #38bdf8; --text-main: #f1f5f9; --text-secondary: #94a3b8; --border-color: #475569; --shadow: 0 10px 30px rgba(0, 0, 0, 0.5); } .week { background: var(--bg-week); display: flex; gap: 20px; padding: 2em; margin: 1em auto; border-radius: 24px; } .day { background: var(--bg-day); padding: 1.5em; flex: 1; min-width: 220px; border-radius: 18px; box-shadow: var(--shadow); border: 1px solid var(--border-color); &:hover { border-color: var(--accent-color); background: #3d4b5f; } h2 { color: var(--accent-color); text-align: center; margin: -1.5em -1.5em 1em -1.5em; padding: 1em 0; background: rgba(56, 189, 248, 0.1); border-radius: 18px 18px 0 0; font-size: 1.1em; } h4 { color: var(--text-main); border-top: 1px solid var(--border-color); margin-top: 1.2em; padding-top: 0.8em; } h5 { color: var(--text-secondary); }} h6 {font-weight: 200;} .now { border: 2px solid var(--accent-color) !important; box-shadow: 0 0 20px rgba(56, 189, 248, 0.2); } @media (max-width:1024px) { .week { flex-direction: column; } }</style>"""
+    script_DARK = """<script>window.addEventListener("scroll", function () { const head = document.querySelector("header"); if (window.scrollY >= 50) { head.style.background = "#1e293bcc"; head.style.width = "70%"; head.style.borderColor = "#38bdf8"; } else { head.style.background = "#1e293b"; head.style.width = "calc(100% - 2rem)"; head.style.borderColor = "#334155"; }});var d=new Date(),n=d.getDay(),m=d.getMonth(),dt=d.getDate(),days={1:"Понедельник",2:"Вторник",3:"Среда",4:"Четверг",5:"Пятница",6:"Суббота",0:"Воскресенье"},months={0:"января",1:"февраля",2:"марта",3:"апреля",4:"мая",5:"июня",6:"июля",7:"августа",8:"сентября",9:"октября",10:"ноября",11:"декабря"},dayCall=days[n],full=dayCall+", "+dt+" "+months[m];document.getElementById("nowDateFull").innerHTML=full;document.querySelectorAll(".day h2").forEach(el=>{if(el.innerText.trim().toLowerCase()===dayCall.toLowerCase())el.closest(".day").classList.add("now")});window.addEventListener("DOMContentLoaded",function(){document.querySelectorAll(".week").forEach(w=>{if(w.innerText.trim().length==0)w.remove()})});</script>"""
+    
+    style_PURPLE = """<style> * { margin: 0; padding: 0; font-family: 'Roboto', serif; } header { background: #6c5ce7; box-shadow: 0 10px 15px -3px rgba(108, 92, 231, 0.3); text-align: center; margin: auto; padding: .6rem; position: sticky; transition: all .6s cubic-bezier(0.4, 0, 0.2, 1); backdrop-filter: blur(8px); border-radius: 50px; width: calc(100% - 4rem); top: 0; animation: w 2s forwards; z-index: 1000000; h1 { letter-spacing: 4px; color: #fff; font-weight: 300; } } body { background: linear-gradient(135deg, #f3f0ff 0%, #e0d7ff 100%); min-height: 100vh; } :root { --bg-week: rgba(255, 255, 255, 0.5); --bg-day: #ffffff; --accent-color: #6c5ce7; --text-main: #2d3436; --text-secondary: #636e72; --border-color: #dcdde1; --shadow: 0 10px 20px rgba(108, 92, 231, 0.05); } .week { background: var(--bg-week); display: flex; gap: 15px; padding: 2.5em; margin: 1.5em auto; border-radius: 30px; backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.8); } .day { background: var(--bg-day); padding: 1.8em; flex: 1; min-width: 210px; border-radius: 22px; box-shadow: var(--shadow); transition: transform 0.4s ease; &:hover { transform: scale(1.03); box-shadow: 0 15px 30px rgba(108, 92, 231, 0.15); } h2 { color: #fff; background: var(--accent-color); margin: -2em -0 .8em 0; padding: .5em 0; border-radius: 22px 22px 0 0; text-align: center; } h4 { border-top: 2px solid #f3f0ff; padding-top: .5em; }} h5 { font-weight: 400; letter-spacing: 2px } h6 {font-weight: 200;} @keyframes w { 100% { transform: translateY(1.5rem); } } @media (max-width:1440px) { main { display: flex; } .week { flex-direction: column; } } @media (max-width:1024px) { main { display: grid; grid-template-columns: 1fr 1fr !important; } } @media (max-width:768px) { main { grid-template-columns: 1fr !important; } .day { pointer-events: none } }  </style>"""
+    script_PURPLE = """<script>window.addEventListener("scroll", function () { const head = document.querySelector("header"); if (window.scrollY >= 50) { head.style.background = "#6c5ce7ee"; head.style.width = "75%"; head.style.borderRadius = "20px"; } else { head.style.background = "#6c5ce7"; head.style.width = "calc(100% - 4rem)"; head.style.borderRadius = "50px"; } }); var d=new Date(),n=d.getDay(),m=d.getMonth(),dt=d.getDate(),days={1:"Понедельник",2:"Вторник",3:"Среда",4:"Четверг",5:"Пятница",6:"Суббота",0:"Воскресенье"},months={0:"января",1:"февраля",2:"марта",3:"апреля",4:"мая",5:"июня",6:"июля",7:"августа",8:"сентября",9:"октября",10:"ноября",11:"декабря"},dayCall=days[n],full=dayCall+", "+dt+" "+months[m];document.getElementById("nowDateFull").innerHTML=full;document.querySelectorAll(".day h2").forEach(el=>{if(el.innerText.trim().toLowerCase()===dayCall.toLowerCase())el.closest(".day").classList.add("now")});window.addEventListener("DOMContentLoaded",function(){document.querySelectorAll(".week").forEach(w=>{if(w.innerText.trim().length==0)w.remove()})});</script>"""
+    
+    
+    if theme == "green":
+        style, script = style_GREEN, script_GREEN
+    elif theme == "blue":
+        style, script = style_BLUE, script_BLUE
+    elif theme == "orange":
+        style, script = style_ORANGE, script_ORANGE
+    elif theme == "dark":
+        style, script = style_DARK, script_DARK
+    elif theme == "purple":
+        style, script = style_PURPLE, script_PURPLE
+    
+    
+    new_HTML = """<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Расписание</title><link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto">""" + style + """</head><body><header><h1>Расписание</h1><object id="nowDateFull" style="color: #d4ffdf; font-weight: 700; letter-spacing: 1px;"></object></header><main>""" + need_data + "</main></body>" + script +"</html>"
+
+    path = io.BytesIO()
+    path.write(new_HTML.encode("utf-8"))
+    path.seek(0)
+    await callback.answer("Файл готов. Отправка...")
+    await callback.message.answer_document(
+        document=types.BufferedInputFile(
+                path.getvalue(),
+                filename=f"schedule_{group_name}.html"
+            ),
+            caption=f"Расписание для {group_name}\n\nСтиль — <b>{theme}</b>",
+            parse_mode="HTML"
+        )
+    await callback.answer("Скачано!")
+    done = True
+    
     if done:
         if state:
             await state.clear()

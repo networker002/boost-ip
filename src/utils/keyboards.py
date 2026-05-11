@@ -145,3 +145,16 @@ def go_or_back_kb() -> InlineKeyboardMarkup:
     builder.adjust(1,1,1,1)
     
     return builder.as_markup()
+
+def styles_choise_kb() -> InlineKeyboardMarkup:
+    builder = InlineKeyboardBuilder()
+    
+    builder.add(InlineKeyboardButton(text="🟢 Зеленый (Классика)", callback_data="html_green"))
+    builder.add(InlineKeyboardButton(text="🔵 Синий (Спокойный)", callback_data="html_blue"))
+    builder.add(InlineKeyboardButton(text="🟠 Оранжевый (Актив)", callback_data="html_orange"))
+    builder.add(InlineKeyboardButton(text="🌑 Темный (Ночной)", callback_data="html_dark"))
+    builder.add(InlineKeyboardButton(text="🟣 Фиолетовый (Креатив)", callback_data="html_purple"))
+    
+    builder.adjust(2)
+    
+    return builder.as_markup()
