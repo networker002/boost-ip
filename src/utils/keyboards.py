@@ -115,7 +115,7 @@ def dwn_days_kb(schedule: list, selected_days: list = None) -> InlineKeyboardMar
             for day in week:
                 day_str = str(day)
                 is_selected = day_str in selected_days
-                text = f"✅" if is_selected else day_str
+                text = f"✅" if is_selected else day_str[:2]
                 
                 builder.add(InlineKeyboardButton(
                     text=text, 
@@ -127,7 +127,7 @@ def dwn_days_kb(schedule: list, selected_days: list = None) -> InlineKeyboardMar
                 callback_data=f"all_{week_index}")
             )
             
-    builder.add(InlineKeyboardButton(text="✔ Применить", callback_data="download_new_sc"))
+    builder.add(InlineKeyboardButton(text="Применить", callback_data="download_new_sc"))
     builder.add(InlineKeyboardButton(text="Отменить", callback_data="cancel_add"))
     builder.adjust(*(7 for _ in range(len(schedule))), 1, 1)
         
@@ -149,11 +149,11 @@ def go_or_back_kb() -> InlineKeyboardMarkup:
 def styles_choise_kb() -> InlineKeyboardMarkup:
     builder = InlineKeyboardBuilder()
     
-    builder.add(InlineKeyboardButton(text="🟢 Зеленый (Классика)", callback_data="html_green"))
-    builder.add(InlineKeyboardButton(text="🔵 Синий (Спокойный)", callback_data="html_blue"))
-    builder.add(InlineKeyboardButton(text="🟠 Оранжевый (Актив)", callback_data="html_orange"))
-    builder.add(InlineKeyboardButton(text="🌑 Темный (Ночной)", callback_data="html_dark"))
-    builder.add(InlineKeyboardButton(text="🟣 Фиолетовый (Креатив)", callback_data="html_purple"))
+    builder.add(InlineKeyboardButton(text="🟢 Зеленая", callback_data="html_green"))
+    builder.add(InlineKeyboardButton(text="🔵 Синяя", callback_data="html_blue"))
+    builder.add(InlineKeyboardButton(text="🟠 Оранжевая", callback_data="html_orange"))
+    builder.add(InlineKeyboardButton(text="⚫ Темная", callback_data="html_dark"))
+    builder.add(InlineKeyboardButton(text="🟣 Фиолетовая", callback_data="html_purple"))
     
     builder.adjust(2)
     
