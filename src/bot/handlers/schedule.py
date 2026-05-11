@@ -567,15 +567,16 @@ async def dwn(callback: types.CallbackQuery, state: FSMContext, bot: Bot):
     if callback.data.endswith("img"):
         from PIL import Image, ImageDraw, ImageFont
         import textwrap
-
+        import os
         await callback.answer("Рисую расписание...")
 
         try:
-            font_title = ImageFont.truetype("arial.ttf", 28)
-            font_week = ImageFont.truetype("arial.ttf", 22)
-            font_day = ImageFont.truetype("arial.ttf", 20)
-            font_text = ImageFont.truetype("arial.ttf", 18)
-            font_small = ImageFont.truetype("arial.ttf", 14)
+            font_path = os.path.join(os.path.dirname(__file__), "Roboto-Regular.ttf")
+            font_title = ImageFont.truetype(font_path, 28)
+            font_week = ImageFont.truetype(font_path, 22)
+            font_day = ImageFont.truetype(font_path, 20)
+            font_text = ImageFont.truetype(font_path, 18)
+            font_small = ImageFont.truetype(font_path, 14)
         except OSError:
             font_title = font_week = font_day = font_text = font_small = ImageFont.load_default()
 
