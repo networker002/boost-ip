@@ -622,18 +622,18 @@ async def dwn(callback: types.CallbackQuery, state: FSMContext, bot: Bot):
                     for lesson in lessons:
                         t_code = int(lesson.get("time_code", 0))
                         t_range = codes.get(t_code, ("??:??", "??:??"))
-                        time_str = f"⏳ {t_range[0]} - {t_range[1]}"
+                        time_str = f"· {t_range[0]} - {t_range[1]}"
                         
                         draw.text((c_x + 20, col_y[c_idx]), time_str, fill="#34495E", font=font_text)
                         col_y[c_idx] += 25
                         
-                        subj = f"📚 {lesson.get('subject', '---')} ({lesson.get('room', '-')})"
+                        subj = f"{lesson.get('subject', '---')} ({lesson.get('room', '-')})"
                         wrapped_subject = textwrap.wrap(subj, width=40) 
                         for line in wrapped_subject:
                             draw.text((c_x + 40, col_y[c_idx]), line, fill="#2d3436", font=font_text)
                             col_y[c_idx] += 25
                         
-                        teacher = f"👨‍🏫 {lesson.get('teacher', '---')}"
+                        teacher = f"{lesson.get('teacher', '---')}"
                         draw.text((c_x + 40, col_y[c_idx]), teacher, fill="#7F8C8D", font=font_small)
                         col_y[c_idx] += 25
                         
