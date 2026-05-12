@@ -2,7 +2,7 @@ name: BoostBot
 
 on:
   schedule:
-    - cron: '12 3 * * *'
+    - cron: '0 2 * * *'
   workflow_dispatch:
     
 jobs:
