@@ -198,7 +198,7 @@ def validate_telegram_init_data(
     return pairs
 
 
-async def authorize(raw_data: str):
+async def authorize(request: fastapi.Request):
     if DEBUG:
         return {
             "user": {
@@ -207,6 +207,7 @@ async def authorize(raw_data: str):
         }, None
     
     try:
+        raw_data = request.headers.get("Authorization")
         validated_data = validate_telegram_init_data(raw_data, os.environ.get("TELEGRAM_BOT_TOKEN"), 1800)
     except InitDataValidationError as e:
         return None, "Init data validation error: " + e.args[0]
@@ -237,7 +238,7 @@ async def telegram_webhook(request: fastapi.Request):
 
 @app.get("/group")
 async def get_group(request: fastapi.Request):
-    auth_data, auth_err = await authorize(request.headers.get("Authorization"))
+    auth_data, auth_err = await authorize(request)
     if auth_err is not None:
         return fastapi.Response(json.dumps({"error": auth_err}), 401)
 
@@ -250,7 +251,7 @@ async def get_group(request: fastapi.Request):
 
 @app.get("/schedule")
 async def get_schedule(request: fastapi.Request):
-    auth_data, auth_err = await authorize(request.headers.get("Authorization"))
+    auth_data, auth_err = await authorize(request)
     if auth_err is not None:
         return fastapi.Response(json.dumps({"error": auth_err}), 401)
 
