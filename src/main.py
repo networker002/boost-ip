@@ -15,6 +15,8 @@ from hashlib import sha256
 from urllib.parse import parse_qsl
 
 load_dotenv()
+DEBUG = bool(os.getenv("DEBUG"))
+DEBUG_USER_ID = os.getenv("DEBUG_USER_ID")
 BOT_API_URL = os.getenv("TELEGRAM_BOT_API_URL")
 BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
 WEBHOOK_HOST = os.getenv("TELEGRAM_WEBHOOK_HOST")
@@ -197,6 +199,13 @@ def validate_telegram_init_data(
 
 
 async def authorize(raw_data: str):
+    if DEBUG:
+        return {
+            "user": {
+                "id": DEBUG_USER_ID
+            }
+        }
+    
     try:
         validated_data = validate_telegram_init_data(raw_data, os.environ.get("TELEGRAM_BOT_TOKEN"), 1800)
     except InitDataValidationError as e:
