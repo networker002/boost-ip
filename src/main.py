@@ -327,7 +327,7 @@ async def get_scheduleX(request: fastapi.Request):
         return "null"
 
     week_name, days_data = resp
-    if not days_data or week_name:
+    if not days_data:
         return "null"
     return week_name, days_data, codes
 
