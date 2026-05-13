@@ -204,7 +204,7 @@ async def authorize(raw_data: str):
             "user": {
                 "id": DEBUG_USER_ID
             }
-        }
+        }, None
     
     try:
         validated_data = validate_telegram_init_data(raw_data, os.environ.get("TELEGRAM_BOT_TOKEN"), 1800)
