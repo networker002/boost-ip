@@ -299,5 +299,37 @@ async def get_schedule(request: fastapi.Request):
     return string or "Пока что пусто"
 
 
+@app.get("/schedulejson")
+async def get_schedule(request: fastapi.Request):
+    auth_data, auth_err = await authorize(request)
+    if auth_err is not None:
+        return fastapi.Response(json.dumps({"error": auth_err}), 401)
+
+    try:
+        group = (await user_group.check_user_group(auth_data["user"]["id"]))["group_name"]
+    except:
+        return "null"
+
+    resp = sch.Schedule(group_name=group).run_()
+    codes = {}
+    try:
+        config_path = Path(__file__).parent.parent / "config" / "example-time.json"
+        with open(config_path, encoding="utf-8") as f:
+            data = json.load(f)
+            for c in data["Times"]:
+                codes[c["Code"]] = (
+                    c["TimeFrom"][-8:-3],
+                    c["TimeTo"][-8:-3],
+                )
+    except FileNotFoundError:
+        print("example-time.json not found :(")
+    if not resp:
+        return "null"
+
+    week_name, days_data = resp
+    if not days_data or week_name:
+        return "null"
+    return week_name, days_data, codes
+
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8000)
