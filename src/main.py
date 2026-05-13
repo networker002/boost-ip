@@ -300,7 +300,7 @@ async def get_schedule(request: fastapi.Request):
 
 
 @app.get("/schedulejson")
-async def get_schedule(request: fastapi.Request):
+async def get_scheduleX(request: fastapi.Request):
     auth_data, auth_err = await authorize(request)
     if auth_err is not None:
         return fastapi.Response(json.dumps({"error": auth_err}), 401)
