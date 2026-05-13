@@ -1,4 +1,4 @@
-name: BoostBot2
+name: "Update Schedule"
 
 on:
   schedule:
