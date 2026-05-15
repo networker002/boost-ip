@@ -25,4 +25,7 @@ async def show_profile(message: types.Message):
 <b>Группа: </b>{group}
 
 <b>Подписка: </b>{subscribe}"""
-    await message.answer(text, parse_mode="HTML", reply_markup=kb.profile_kb())
+    if message.chat.type not in ["group", "supergroup"]:
+        await message.answer(text, parse_mode="HTML", reply_markup=kb.profile_kb())
+    else:
+        await message.reply(text, parse_mode="HTML")
