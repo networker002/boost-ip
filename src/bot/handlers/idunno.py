@@ -17,6 +17,10 @@ from pathlib import Path
 import json
 import io
 
+import os
+import textwrap
+from PIL import Image, ImageDraw, ImageFont
+
 router = Router()
 c_list = [cmd.strip().lower() for cmd in get().split("\n") if cmd.strip()]
 
@@ -93,11 +97,11 @@ async def idunno(message: Message, bot: Bot):
             
             all_dates = get_weeks.get_range()
             req_days = []
-            color1, color2 = random.choice([
-                ("#27AE60", "#1D8348"),
-                ("#279EAE", "#1D5283"),
-                ("#8827AE", "#5A1D83"),
-                ("#AEAC27", "#83791D")
+            (color1, color2, color3) = random.choice([
+                ("#27AE60", "#1D8348", "#D5F5E3"),
+                ("#279EAE", "#1D5283", "#D5E2F5"),
+                ("#8827AE", "#5A1D83", "#EFD5F5"),
+                ("#AEAC27", "#A0AF19", "#F5F5D5")
             ])
             for week in all_dates:
                 for day in week:
@@ -160,7 +164,7 @@ async def idunno(message: Message, bot: Bot):
                     c_idx = d_idx % 2
                     c_x = col_x[c_idx]
 
-                    draw.rounded_rectangle([c_x, col_y[c_idx], c_x + col_w, col_y[c_idx]+35], radius=6, fill="#D5F5E3")
+                    draw.rounded_rectangle([c_x, col_y[c_idx], c_x + col_w, col_y[c_idx]+35], radius=6, fill=color3)
                     draw.text((c_x + 20, col_y[c_idx] + 5), f"{day_name} ({date_str})", fill=color2, font=font_day)
                     col_y[c_idx] += 45
 
