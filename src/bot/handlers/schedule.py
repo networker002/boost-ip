@@ -549,6 +549,13 @@ async def dwn(callback: types.CallbackQuery, state: FSMContext, bot: Bot):
         import os
         await callback.answer("Рисую расписание...")
 
+        color1, color2 = random.choice([
+                ("#27AE60", "#1D8348"),
+                ("#279EAE", "#1D5283"),
+                ("#8827AE", "#5A1D83"),
+                ("#AEAC27", "#83791D")
+            ])
+
         try:
             font_path = os.path.join(os.path.dirname(__file__), "Roboto-Regular.ttf")
             font_title = ImageFont.truetype(font_path, 28)
@@ -591,7 +598,7 @@ async def dwn(callback: types.CallbackQuery, state: FSMContext, bot: Bot):
             draw.text((20, y), f"Расписание: {group_name}", fill="#2d3436", font=font_title)
             y += 60
 
-            draw.rounded_rectangle([20, y, width-20, y+45], radius=8, fill="#27AE60")
+            draw.rounded_rectangle([20, y, width-20, y+45], radius=8, fill=color1)
             draw.text((40, y+10), str(week_name), fill="white", font=font_week)
             y += 70
 
@@ -604,7 +611,7 @@ async def dwn(callback: types.CallbackQuery, state: FSMContext, bot: Bot):
                 c_x = col_x[c_idx]
 
                 draw.rounded_rectangle([c_x, col_y[c_idx], c_x + col_w, col_y[c_idx]+35], radius=6, fill="#D5F5E3")
-                draw.text((c_x + 20, col_y[c_idx] + 5), f"{day_name} ({date_str})", fill="#1D8348", font=font_day)
+                draw.text((c_x + 20, col_y[c_idx] + 5), f"{day_name} ({date_str})", fill=color2, font=font_day)
                 col_y[c_idx] += 45
 
                 if not lessons:
