@@ -137,7 +137,7 @@ def go_or_back_kb() -> InlineKeyboardMarkup:
     builder = InlineKeyboardBuilder()
     
     builder.add(InlineKeyboardButton(text="Экспорт HTML", callback_data="schedule_html"))
-    builder.add(InlineKeyboardButton(text="Экспорт EXEL", callback_data="schedule_exel"))
+    builder.add(InlineKeyboardButton(text="Экспорт EXCEL", callback_data="schedule_exel"))
     builder.add(InlineKeyboardButton(text="Экспорт TXT", callback_data="schedule_txt"))
     builder.add(InlineKeyboardButton(text="Экспорт картинкой", callback_data="schedule_img"))
     builder.add(InlineKeyboardButton(text="Назад", callback_data="download_schedule"))
