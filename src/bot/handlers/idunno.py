@@ -205,7 +205,7 @@ async def idunno(message: Message, bot: Bot):
                 file = types.BufferedInputFile(path.getvalue(), filename=f"week_{idx+1}.png")
                 media_list.append(types.InputMediaPhoto(
                     media=file,
-                    caption=f"📅 Вот расписание\nПрошедшая неделя - текущая - будущая\nНадеюсь, помог"
+                    caption=f"<b>📅 Вот расписание</b>\n1) Прошедшая неделя\n2) Текущая неделя\n3) Будущая неделя\nНадеюсь, помог" if responses[-1] == response else None, parse_mode="HTML"
                 ))
                 # await callback.message.answer_photo(
                 #     photo=types.BufferedInputFile(path.getvalue(), filename=f"week_{idx+1}.png"),
@@ -216,6 +216,57 @@ async def idunno(message: Message, bot: Bot):
                 await message.reply_media_group(media=media_list)
             else:
                 print("unk err")
+            
+            try:
+                st_TXT = []
+                st_cfg_txt = {} #txt
+                full_week_txt = ""
+                
+                for idx, response in enumerate([response1, response2, response3]):
+                    
+                    current_week_by_dates = all_dates[idx]
+                    week_name, days_data = response
+                    st_cfg_txt[week_name] = {}
+                    
+                    
+                    for day_idx, (dayN, dayC) in enumerate(days_data.items()):
+                        stringTXT = """"""
+                        # if dayN == "Понедельник":
+                        #     stringHTML += "<div class='week'>"
+                        stringTXT += f"\t📆 {dayN} {current_week_by_dates[day_idx] if  day_idx < len(current_week_by_dates) else ""}\n"
+                        
+                        if not dayC:
+                            stringTXT += "\nЗанятий нет\n"
+                        else:
+                            for lesson in dayC:
+                                time_code = int(lesson["time_code"])
+                                time_range = codes.get(time_code, ("", ""))
+                                
+                                stringTXT += (
+                                    f"\n{lesson['time']}\n"
+                                    f"  {time_range[0]} - {time_range[1]}\n"
+                                    f"  {lesson['teacher']}\n"
+                                    f"  {lesson['subject']} ({lesson['room']})\n"
+                                )
+                        stringTXT += "\n"
+                        
+                        if day_idx < len(current_week_by_dates):
+                            date_key = current_week_by_dates[day_idx]
+                            st_cfg_txt[week_name][date_key] = stringTXT
+
+                    full_week_txt += "\n" + "\n".join(st_cfg_txt[week_name].values())
+                    st_TXT.append(full_week_txt)
+
+                
+                ans2 = ai.answer_text_with_fallback(message.text, full_week_txt)
+
+                await message.reply(
+                    f"<b>🤖 AI анализ</b>:\n\n<blockquote>{ans2}</blockquote>",
+                    parse_mode="HTML"
+                )
+            except Exception as e:
+                print("idunno.py, 230")
+                print(e)
 
 @router.message(F.sticker)
 async def and_st(message: Message):
