@@ -82,7 +82,7 @@ def parse_ai_response(response) -> bool:
 
 def answer_text(ctx:str, model:str = None) -> bool | None:
     try:
-        model = model if model else "gpt-3.5-turbo-16k"
+        model = model if model else "minimax/minimax-m2.5:free"
 
         response = client.chat.completions.create(
             model=model,
