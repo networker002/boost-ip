@@ -32,7 +32,8 @@ async def notice_handler(message: types.Message, bot: Bot, state: FSMContext):
     #print(f"Received notice command from user {user_id} with text: {text}")
     #print(text[1:])
     if len(text) < 2:
-        pass
+        await message.reply("Пожалуйста, укажите группу и текст уведомления в формате:\n/notice [группа] [текст_уведомления]\n\n<tg-spoiler>Пример:\n/notice ИВБО-01 Встреча в 15:00 в аудитории 101</tg-spoiler>", parse_mode="HTML")
+
     else:
         try:
             group_name = ""
