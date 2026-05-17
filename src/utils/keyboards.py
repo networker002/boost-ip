@@ -158,3 +158,12 @@ def styles_choise_kb() -> InlineKeyboardMarkup:
     builder.adjust(2)
     
     return builder.as_markup()
+
+def want_to_repeat_kb() -> InlineKeyboardMarkup:
+    builder = InlineKeyboardBuilder()
+    
+    builder.add(InlineKeyboardButton(text="Повторить", callback_data="want_to_repeat"))
+    
+    builder.adjust(1)
+    
+    return builder.as_markup()

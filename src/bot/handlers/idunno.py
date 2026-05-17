@@ -66,7 +66,16 @@ COMPILED_TRIGGERS = [re.compile(p, re.IGNORECASE) for p in TRIGGER_PATTERNS]
 class IdontKnowFilter(BaseFilter):
     
     async def __call__(self, message: Message) -> bool:
-        return bool(message.text) and message.text.strip().lower() not in c_list
+        if len(message.text.split()) < 2:
+            return bool(message.text) and message.text.strip().lower() not in c_list
+        else:
+            message_texts = message.text.split()
+            unfound = True
+            for word in message_texts:
+                if word.strip().lower() in c_list:
+                    unfound = False
+                    break
+            return unfound
 
 async def check_async(text: str) -> bool:
     if not text:
