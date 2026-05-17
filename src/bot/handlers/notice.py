@@ -41,7 +41,7 @@ async def notice_handler(message: types.Message, bot: Bot, state: FSMContext):
                 gr = i.upper()
                 if gr in groups:
                     group_name = gr
-                    print(f"Identified group name: {group_name}")
+                    #print(f"Identified group name: {group_name}")
                     idx = text.index(i)
                     break
                 
@@ -85,7 +85,7 @@ async def repeat_notice_callback(callback: types.CallbackQuery, state: FSMContex
     await callback.answer()
     current_state = await state.get_state()
     current_data = await state.get_data()
-    print(f"Current state in repeat_notice_callback: {current_state}")
+    #print(f"Current state in repeat_notice_callback: {current_state}")
     
     
     if current_state == NoticeState.wanting_to_repeat.state:
