@@ -46,14 +46,14 @@ async def schedule_inline(inline_query: InlineQuery):
 
     thumbnail_url = None
     try:
-        if text == "завтра":
-            today = datetime.datetime.now().weekday()
-            if today == 6: # воскресенье
+        if text == "сегодня":
+            day_index = datetime.datetime.now().weekday()
+            if day_index == 6: # воскресенье
                 res = InlineQueryResultArticle(
                     id=result_id,
-                    title="🎉 Завтра выходной!",
+                    title="🎉 Сегодня выходной!",
                     input_message_content=InputTextMessageContent(
-                        message_text=f"Завтра нет пар.",
+                        message_text=f"🎉 Сегодня нет пар",
                         parse_mode="HTML",
                     ),
                     description="В воскресенье пар нет",
@@ -61,7 +61,23 @@ async def schedule_inline(inline_query: InlineQuery):
                 await inline_query.answer(results=[res], cache_time=30)
                 return 
 
-            target_day_code = week_days[(today + 1) % 7]
+            target_day_code = week_days[day_index]
+        elif text == "завтра":
+            day_index = (datetime.datetime.now().weekday() + 1) % 7
+            if day_index == 6: # воскресенье
+                res = InlineQueryResultArticle(
+                    id=result_id,
+                    title="🎉 Завтра выходной!",
+                    input_message_content=InputTextMessageContent(
+                        message_text=f"🎉 Завтра нет пар",
+                        parse_mode="HTML",
+                    ),
+                    description="В воскресенье пар нет",
+                )
+                await inline_query.answer(results=[res], cache_time=30)
+                return
+
+            target_day_code = week_days[day_index]
         else:
             target_day_code = days_map[text]
 
