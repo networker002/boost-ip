@@ -69,40 +69,40 @@ async def _get_schedule_logic(message: types.Message, user_id: int, bot: Bot, we
         ])
         
     )
-        
+
         s_data = True
-    
+
     else:
         s_data = False
 
     res = await check_user_group(user_id)
-    if res is None or "group_name" not in res.keys() or len(res["group_name"]) < 4:
+    if res is None or "group_name" not in res.keys() or len(res.get("group_name", "")) < 4:
         await _safe_edit_text(
             sent_message,
             text="Сначала вы должны зарегистрировать свою группу.\nИспользуйте команду /group"
         )
         return
-    
+
     try:
         group_name = res.get("group_name")
         # response = schedule.Schedule(group_name=group_name).run_()
         response1, response2, response3 = await schedule.Schedule(group_name=group_name).get_schedule_async(prev_next=True)
-        #print(63)
+        # print(63)
     except Exception as e:
         print("Schedule error:", e)
         response1, response2, response3 = None, None, None
 
     # print(80)
     # print(response)
-    #print(codes)
+    # print(codes)
     st = []
     stWeek = []
-    
+
     if not response2:
         await _safe_edit_text(sent_message, "Пока что пусто")
         return
-    
-    #print([response1, response2, response3])
+
+    # print([response1, response2, response3])
     for response in [response1, response2, response3]:
         string = """"""
         week_name, days_data = response
@@ -142,17 +142,17 @@ async def _get_schedule_logic(message: types.Message, user_id: int, bot: Bot, we
                 await sent_message.pin()
         except TelegramBadRequest:
             pass
-        
+
     else:
         pass
-    
+
     # mapping_prev = {
     #     0:3,
     #     1:0,
     #     2:1,
     #     3:2
     # }
-    
+
     # mapping_next = {
     #     0:1,
     #     1:2,
@@ -166,7 +166,7 @@ async def _get_schedule_logic(message: types.Message, user_id: int, bot: Bot, we
         1: stWeek[0],
         2: stWeek[1]
     }
-    
+
     mappingNX = {
         0: stWeek[1],
         1: stWeek[2],
@@ -174,7 +174,7 @@ async def _get_schedule_logic(message: types.Message, user_id: int, bot: Bot, we
     }
     pr =  mappingPR.get(weektype)
     nx = mappingNX.get(weektype)
-    
+
     # print(pr, nx)
 
     if weektype == 1:
@@ -188,7 +188,7 @@ async def _get_schedule_logic(message: types.Message, user_id: int, bot: Bot, we
         next_cb = None
 
     mrkp = keyboards.swipe_schedule_kb(pr, nx, prev_data=prev_cb or "prev_week", next_data=next_cb or "next_week")
-    #print(stWeek)
+    # print(stWeek)
     await _safe_edit_text(sent_message, final_text, parse_mode="HTML", reply_markup=mrkp)
 
 @router.callback_query(F.data.startswith("swipe_week:"))
@@ -213,7 +213,7 @@ async def go_prev_sc(callback: types.CallbackQuery, bot: Bot):
 @router.callback_query(F.data == "next_week")
 async def go_prev_sc(callback: types.CallbackQuery, bot: Bot):
     await _get_schedule_logic(callback.message, callback.from_user.id, bot, weektype=2, sent_message=callback.message)
-    
+
 @router.callback_query(F.data == "download_schedule")
 async def give_info_days(callback: types.CallbackQuery, state: FSMContext):
     if state:
@@ -236,7 +236,7 @@ async def give_info_days(callback: types.CallbackQuery, state: FSMContext):
     text = f"""<b>Скачать расписание для группы {group.get("group_name") if group else ""}</b>\n\nВыберите дни (<i>ПН - СБ + ВСЕ сразу</i>): {ALLSTR}"""
     
     await _safe_edit_text(callback.message, text=text, parse_mode="HTML", reply_markup=mk)
-   
+
 @router.callback_query(F.data == "download_new_sc")
 async def rem(callback: types.CallbackQuery, state: FSMContext):
     data = await state.get_data()
@@ -261,7 +261,7 @@ async def cancel_add(callback: types.CallbackQuery, state: FSMContext, bot: Bot)
         await state.clear()
     await _get_schedule_logic(callback.message, callback.from_user.id, bot=bot, sent_message=callback.message)
     await callback.answer("Отменяем скачивание...")
-    
+
 @router.callback_query(F.data.startswith("add_"))
 async def handle_day_selection(callback: types.CallbackQuery, state: FSMContext):
     clicked_day = callback.data.replace("add_", "")
@@ -280,8 +280,7 @@ async def handle_day_selection(callback: types.CallbackQuery, state: FSMContext)
     
     await callback.message.edit_reply_markup(reply_markup=new_kb)
 
-    
-    
+
 @router.callback_query(F.data.startswith("all_"))
 async def handle_all_week_selection(callback: types.CallbackQuery, state: FSMContext):
     week_index = int(callback.data.split("_")[1])
@@ -308,7 +307,7 @@ async def handle_all_week_selection(callback: types.CallbackQuery, state: FSMCon
     new_kb = keyboards.dwn_days_kb(get_weeks.get_range(), selected_days=selected_days)
     await callback.message.edit_reply_markup(reply_markup=new_kb)
     await callback.answer()
-    
+
 @router.callback_query(F.data.startswith("schedule_"))
 async def dwn(callback: types.CallbackQuery, state: FSMContext, bot: Bot):
     user_id = callback.from_user.id
@@ -671,7 +670,7 @@ async def dwn(callback: types.CallbackQuery, state: FSMContext, bot: Bot):
     if done:
         if state:
             await state.clear()
-        
+
 @router.callback_query(F.data.startswith("html_"))
 async def send_schedule(callback: types.CallbackQuery, state: FSMContext, bot: Bot):
     user_id = callback.from_user.id
