@@ -61,7 +61,7 @@ async def check_group(message: types.Message):
 @router.message(F.data == "want_add_group")
 async def check_code(callback: types.CallbackQuery, state: FSMContext):
     
-    await callback.message.reply("Введите свою группу - я вас зарегестрирую: ")
+    await callback.message.reply("Введите свою группу - я вас зарегистрирую: ")
     await state.set_state(GroupState.wanting_crate_group)
     # await message.answer()
 
