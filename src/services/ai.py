@@ -3,21 +3,38 @@ from dotenv import load_dotenv
 import os
 from datetime import datetime
 import services.get_weeks as get_weeks
+from pathlib import Path
+import random as rnd
 
 load_dotenv()
 
 
 try:
-    api_key = os.getenv("AI_TOKEN")
+    api_key1 = os.getenv("AI_TOKEN")
+    api_key2 = os.getenv("AI_TOKEN2")
 except EnvironmentError as e:
     print(e)
     pass
 
-client = OpenAI(
-    base_url="https://openrouter.ai/api/v1",
-    api_key=api_key
-)
-import random as rnd
+try:
+    with open(Path(__file__).parent.parent.parent / "config" / "useragents.txt", "r") as f:
+        UA = f.read().split("\n")
+
+except Exception as e:
+    print("UA file error\n", e)
+
+def create_client() -> OpenAI:
+    client = OpenAI(
+        base_url="https://openrouter.ai/api/v1",
+        api_key=rnd.choice([api_key1, api_key2]),
+        max_retries=3,
+        default_headers={
+            "User-Agent": rnd.choice(UA)
+            }
+    )
+
+    return client
+
 
 model1 = "arcee-ai/trinity-large-preview:free"#WORKS 1.8789713382720947-10s
 # model2 = "openai/gpt-oss-120b:free"#WORKS 15.933915376663208s
@@ -82,9 +99,9 @@ def parse_ai_response(response) -> bool:
 
 def answer_text(ctx:str, model:str = None) -> bool | None:
     try:
-        model = model if model else "minimax/minimax-m2.5:free"
+        model = model if model else "openrouter/free"
 
-        response = client.chat.completions.create(
+        response = create_client().chat.completions.create(
             model=model,
             messages=[
                 
@@ -131,9 +148,9 @@ def answer_text(ctx:str, model:str = None) -> bool | None:
 
 days_name = {0:"Понедельник", 1:"Вторник", 2:"Среда", 3:"Четверг", 4:"Пятница", 5:"Суббота", 6:"Воскресенье"}
 
-def answer_text_with_fallback(ctx:str, data:str, model:str = "minimax/minimax-m2.5:free") -> bool | None:
+def answer_text_with_fallback(ctx:str, data:str, model:str = "openrouter/free") -> bool | None:
     try:
-        response = client.chat.completions.create(
+        response = create_client().chat.completions.create(
             model=model,
             messages=[
                 {
@@ -150,6 +167,8 @@ def answer_text_with_fallback(ctx:str, data:str, model:str = "minimax/minimax-m2
 
 ### ИСХОДНЫЕ ДАННЫЕ РАСПИСАНИЯ:
 {data}
+
+(воскресенье не отображается в расписании, если его нет в данных, значит пар в этот день нет - это выходной)
 
 ### ЗАПРОС ПОЛЬЗОВАТЕЛЯ:
 "{ctx}"
@@ -170,13 +189,15 @@ def answer_text_with_fallback(ctx:str, data:str, model:str = "minimax/minimax-m2
 Ответ: "Сейчас идет: История (ауд. 303)"
 
 Пользователь: "че по расписанию в среду на след неделе"
-Ответ: "В следующую среду: Программирование (ауд. 404), Лингвистика (ауд. 102)"
+Ответ: "В следующую среду: Программирование (ауд. 404), Лингвистика (ауд. 102) / ничего нет."
 
 Пользователь: "привет, как дела, что делаешь?"
 Ответ: "НЕПОНЯТНО"
+
+ПОМНИ - ТЫ БОТ РАСПИСАНИЯ, ТВОЯ РОЛЬ - ДАВАТЬ КОНКРЕТНЫЕ ОТВЕТЫ ИСКЛЮЧИТЕЛЬНО НА ОСНОВЕ ПРЕДОСТАВЛЕННЫХ ДАННЫХ. НЕ ВЫХОДИ ЗА ИХ ПРЕДЕЛЫ.
 """
                 }
-            ], max_tokens=500,
+            ], max_tokens=400,
             temperature=0.1,
         )
         # print(days_name[datetime.now().weekday()])
@@ -184,6 +205,6 @@ def answer_text_with_fallback(ctx:str, data:str, model:str = "minimax/minimax-m2
         # print(response)
         return response.choices[0].message.content
     except Exception as e:
-        answer_text_with_fallback(ctx, data, "z-ai/glm-4.5-air:free")
+        # answer_text_with_fallback(ctx, data, "openrouter/free")
         print("ai.py, 161")
         print(e)

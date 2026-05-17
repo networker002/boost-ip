@@ -7,7 +7,7 @@ from aiogram import Bot, Dispatcher
 from aiogram.client.session.aiohttp import AiohttpSession
 from aiogram.client.telegram import TelegramAPIServer
 import aiohttp
-from bot.handlers import start, show_c, conv, schedule, set_group, profile, inline, idunno, group_admin
+from bot.handlers import start, show_c, conv, schedule, set_group, profile, inline, idunno, group_admin, pinunpin
 from utils.anti_flood import AntiFloodMiddleware
 import hmac
 import time
@@ -34,6 +34,7 @@ dp.include_router(profile.router)
 dp.include_router(inline.router)
 dp.include_router(idunno.router)
 dp.include_router(group_admin.router)
+dp.include_router(pinunpin.router)
 
 import fastapi
 from services.db import schedule as sch

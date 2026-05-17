@@ -553,7 +553,7 @@ async def dwn(callback: types.CallbackQuery, state: FSMContext, bot: Bot):
                 ("#27AE60", "#1D8348", "#D5F5E3"),
                 ("#279EAE", "#1D5283", "#D5E2F5"),
                 ("#8827AE", "#5A1D83", "#EFD5F5"),
-                ("#AEAC27", "#A0AF19", "#F5F5D5")
+                ("#E2DF33", "#FAAE09", "#F5F5D5")
             ])
 
         try:

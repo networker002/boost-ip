@@ -17,7 +17,7 @@ from pathlib import Path
 import json
 import io
 
-import os
+import os, re
 import textwrap
 from PIL import Image, ImageDraw, ImageFont
 
@@ -30,7 +30,38 @@ builder.row(InlineKeyboardButton(
         web_app=WebAppInfo(url="https://networker002.github.io/webapp/")
     ))
 
-TRIGGERS = ["расписан", "график", "урок", "пар", "заняти", "лекци", "распоряд", "план", "календар", "расп"]
+# TRIGGERS = ["расписан", "график", "урок", "пар", "заняти", "лекци", "распоряд", "план", "календар", "расп"]
+TRIGGER_PATTERNS = [
+    # 1. Запросы со словами-действиями + расписание (с учетом опечаток в корнях)
+    r"\b(?:ск[ие]нь(?:те)?|д[ао]й(?:те)?|п[оа]каж[ие](?:те)?|как[ое]?|гд[еиё]).{0,20}\bр[ао]сп[ие]с[ао]н[а-яё]*\b",
+    r"\bн[ап]\s+(?:з[ао]втр[ао]|с[еио][гв]одня|п[оа]сл[еи]з[ао]втр[ао]).{0,20}(?:р[ао]сп[ие]с[ао]н|п[ао]р[ыуаех]?|ур[оа]к)[а-яё]*\b",
+    
+    # 2. Вопросы про пары (допущена замена а->о, ы->и)
+    r"\bп[ао]р[ыуаехи]?\s+(?:с[еио][гв]одня|з[ао]втр[ао]|п[оа]сл[еи]з[ао]втр[ао])\b", 
+    r"\b(?:с[еио][гв]одня|з[ао]втр[ао]|п[оа]сл[еи]з[ао]втр[ао])\s+п[ао]р[ыуаехи]?\b", 
+    r"\bкак[ие][ея]?\s+п[ао]р[ыуаехи]?\b",                           
+    r"\bч[т]?[еоупё]\s+(?:т[ао]м\s+)?п[оар]\s+п[ао]р[ао]м\b",             # "че по парам", "чп по парам", "чо пп парам"
+    
+    # 3. Разговорные общие фразы + "на завтра что" / "на завтра чп"
+    r"\bч[т]?[еоупё]\s+(?:з[ао]втр[ао]|с[еио][гв]одня|у\s+н[ао]с)\b",      # "че завтра", "чп завтра", "что у нас"
+    r"\bн[ап]\s+(?:з[ао]втр[ао]|с[еио][гв]одня|п[оа]сл[еи]з[ао]втр[ао])\s+ч[т]?[еоупё]\b", # "на завтра чп", "нп завтра че"
+    r"\bч[т]?[еоупё]\s+(?:т[ао]м\s+)?н[ап]\s+(?:з[ао]втр[ао]|с[еио][гв]одня|п[оа]сл[еи]з[ао]втр[ао])\b", # "че там нп завтра"
+    r"\bк[оа]гд[ао]\s+(?:в\s+ун[ие]к|в\s+ш[ао]р[ао]гу|н[ап]\s+уч[еи]бу)\b", # "когда в уник", "когда нп учебу"
+    r"\bк[оа]гд[ао]\s+(?:сл[еи]дующ|прошл)[а-яё]*\s+(?:н[еи]д[еи]л|п[ао]р)[а-яё]*\b",
+    
+    # 4. Одиночные слова (базовые триггеры с защитой от промахов по клавишам)
+    r"\bр[ао]сп[ие]с[ао]н[а-яё]*\b",     # расписание, росписание, распесание
+    r"\bр[ао]сп[ао]р[яе]д[а-яё]*\b",     # распорядок
+    r"\bур[оа]к[а-яё]*\b",               # урок, урак
+    r"\bп[ао]р[ыуаехи]?\b",              # пары, поры, пару, пори
+    r"\bп[ао]р[ао]м[и]?\b",              # парам, парами
+    r"\bз[ао]н[яе]т[ияею][а-яё]*\b",     # занятия, зонятия
+    r"\bл[еи]кц[иея][а-яё]*\b",          # лекции, ликции
+    r"\bк[ао]л[еи]нд[ао]р[а-яё]*\b",     # календарь, колендарь
+]
+
+COMPILED_TRIGGERS = [re.compile(p, re.IGNORECASE) for p in TRIGGER_PATTERNS]
+#print(COMPILED_TRIGGERS)
 
 class IdontKnowFilter(BaseFilter):
     
@@ -40,18 +71,30 @@ class IdontKnowFilter(BaseFilter):
 async def check_async(text: str) -> bool:
     if not text:
         return False
-        
+    
+    #print(f"Checking message: {text}")  # Debug log
+
     text_lower = text.lower()
-    words = text_lower.split()
+    text_no_punct = re.sub(r'[^\w\s]', ' ', text_lower)  # Удаляем пунктуацию, оставляем только слова и пробелы
+    text_clean = re.sub(r'\s+', ' ', text_no_punct).strip()
 
-    if any(any(word.startswith(t) for t in TRIGGERS) for word in words):
-        return True
+    #print(f"Cleaned text: {text_clean}")  # Debug log
 
-    try:
-        return await asyncio.to_thread(ai.answer_text, text)
-    except Exception as e:
-        print(f"AI Check Error: {e}")
-        return False
+    for pattern in COMPILED_TRIGGERS:
+        if pattern.search(text_clean):
+            #print(f"Triggered by pattern: {pattern.pattern}") # Полезно для дебага
+            return True
+    #print("No trigger matched") 
+    return False
+    # if any(pattern.search(text_lower) for pattern in COMPILED_TRIGGERS):
+    #     print("triggereed")
+    #     return True
+
+    # try:
+    #     return await asyncio.to_thread(ai.answer_text, text)
+    # except Exception as e:
+    #     print(f"AI Check Error: {e}")
+    #     return False
 
 
 codes = {}
@@ -79,194 +122,195 @@ async def idunno(message: Message, bot: Bot):
             parse_mode="HTML"
         )
     elif message.chat.type in ["group", "supergroup"]:
-        answerId = await check_async(message.text)
+        if message.text and len(message.text) > 3:
+            answerId = await check_async(message.text)
 
-        if answerId == True:
-            res = await check_user_group(message.from_user.id)
-            if res is None or len(res.get("group_name")) < 4:
-                await message.reply(
-                    text=f"{message.from_user.full_name.capitalize()}, сначала Вы должны зарегистрировать свою группу.\nИспользуйте команду /group"
-                )
-                return
-            
-            try:
-                group_name = res.get("group_name")
-                response1, response2, response3 = await schedule.Schedule(group_name=group_name).get_schedule_async(prev_next=True)
-            except Exception as e:
-                print(e)
-            
-            all_dates = get_weeks.get_range()
-            req_days = []
-            (color1, color2, color3) = random.choice([
-                ("#27AE60", "#1D8348", "#D5F5E3"),
-                ("#279EAE", "#1D5283", "#D5E2F5"),
-                ("#8827AE", "#5A1D83", "#EFD5F5"),
-                ("#AEAC27", "#A0AF19", "#F5F5D5")
-            ])
-            for week in all_dates:
-                for day in week:
-                    req_days.append(day)
+            if answerId == True:
+                res = await check_user_group(message.from_user.id)
+                if res is None or len(res.get("group_name")) < 4:
+                    await message.reply(
+                        text=f"{message.from_user.full_name.capitalize()}, сначала Вы должны зарегистрировать свою группу.\nИспользуйте команду /group"
+                    )
+                    return
                 
-            from PIL import Image, ImageDraw, ImageFont
-            import textwrap
-            import os
-            try:
-                font_path = os.path.join(os.path.dirname(__file__), "Roboto-Regular.ttf")
-                font_title = ImageFont.truetype(font_path, 28)
-                font_week = ImageFont.truetype(font_path, 22)
-                font_day = ImageFont.truetype(font_path, 20)
-                font_text = ImageFont.truetype(font_path, 18)
-                font_small = ImageFont.truetype(font_path, 14)
-            except OSError:
-                font_title = font_week = font_day = font_text = font_small = ImageFont.load_default()
-
-            responses = [response1, response2, response3]
-            
-            media_list = []
-
-            for idx, response in enumerate(responses):
-                if not response: continue
+                try:
+                    group_name = res.get("group_name")
+                    response1, response2, response3 = await schedule.Schedule(group_name=group_name).get_schedule_async(prev_next=True)
+                except Exception as e:
+                    print(e)
+                
+                all_dates = get_weeks.get_range()
+                req_days = []
+                (color1, color2, color3) = random.choice([
+                    ("#27AE60", "#1D8348", "#D5F5E3"),
+                    ("#279EAE", "#1D5283", "#D5E2F5"),
+                    ("#8827AE", "#5A1D83", "#EFD5F5"),
+                    ("#E2DF33", "#FAAE09", "#F5F5D5")
+                ])
+                for week in all_dates:
+                    for day in week:
+                        req_days.append(day)
                     
-                week_name, days_data = response
-                current_week_dates = all_dates[idx] if idx < len(all_dates) else []
+                from PIL import Image, ImageDraw, ImageFont
+                import textwrap
+                import os
+                try:
+                    font_path = os.path.join(os.path.dirname(__file__), "Roboto-Regular.ttf")
+                    font_title = ImageFont.truetype(font_path, 28)
+                    font_week = ImageFont.truetype(font_path, 22)
+                    font_day = ImageFont.truetype(font_path, 20)
+                    font_text = ImageFont.truetype(font_path, 18)
+                    font_small = ImageFont.truetype(font_path, 14)
+                except OSError:
+                    font_title = font_week = font_day = font_text = font_small = ImageFont.load_default()
 
-
-                valid_days_to_draw = []
-                for day_idx, (day_name, lessons) in enumerate(days_data.items()):
-                    date_str = current_week_dates[day_idx] if day_idx < len(current_week_dates) else ""
-                    if req_days and date_str not in req_days:
-                        continue
-                    valid_days_to_draw.append((day_name, date_str, lessons))
-
-
-                if not valid_days_to_draw:
-                    continue
-
-
-                width = 1200 
-
-                temp_img = Image.new('RGB', (width, 5000), color='#f4f7f2')
-                draw = ImageDraw.Draw(temp_img)
+                responses = [response1, response2, response3]
                 
-                y = 20
-                draw.text((20, y), f"Расписание: {group_name}", fill="#2d3436", font=font_title)
-                y += 60
+                media_list = []
 
-                draw.rounded_rectangle([20, y, width-20, y+45], radius=8, fill=color1)
-                draw.text((40, y+10), str(week_name), fill="white", font=font_week)
-                y += 70
-
-                col_x = [20, 610]
-                col_w = 570
-                col_y = [y, y]
-                
-                for d_idx, (day_name, date_str, lessons) in enumerate(valid_days_to_draw):
-                    c_idx = d_idx % 2
-                    c_x = col_x[c_idx]
-
-                    draw.rounded_rectangle([c_x, col_y[c_idx], c_x + col_w, col_y[c_idx]+35], radius=6, fill=color3)
-                    draw.text((c_x + 20, col_y[c_idx] + 5), f"{day_name} ({date_str})", fill=color2, font=font_day)
-                    col_y[c_idx] += 45
-
-                    if not lessons:
-                        draw.text((c_x + 20, col_y[c_idx]), "Пар нет", fill="#7F8C8D", font=font_text)
-                        col_y[c_idx] += 40
-                    else:
-                        for lesson in lessons:
-                            t_code = int(lesson.get("time_code", 0))
-                            t_range = codes.get(t_code, ("??:??", "??:??"))
-                            time_str = f"· {t_range[0]} - {t_range[1]}"
-                            
-                            draw.text((c_x + 20, col_y[c_idx]), time_str, fill="#34495E", font=font_text)
-                            col_y[c_idx] += 25
-                            
-                            subj = f"{lesson.get('subject', '---')} ({lesson.get('room', '-')})"
-                            wrapped_subject = textwrap.wrap(subj, width=40) 
-                            for line in wrapped_subject:
-                                draw.text((c_x + 40, col_y[c_idx]), line, fill="#2d3436", font=font_text)
-                                col_y[c_idx] += 25
-                            
-                            teacher = f"{lesson.get('teacher', '---')}"
-                            draw.text((c_x + 40, col_y[c_idx]), teacher, fill="#7F8C8D", font=font_small)
-                            col_y[c_idx] += 25
-                            
-                            draw.line([c_x + 20, col_y[c_idx], c_x + col_w - 20, col_y[c_idx]], fill="#BDC3C7", width=1)
-                            col_y[c_idx] += 15
-                    
-                    col_y[c_idx] += 20 
-
-
-                final_y = max(col_y[0], col_y[1]) + 20 
-                week_img = temp_img.crop((0, 0, width, max(final_y, 300)))
-
-                path = io.BytesIO()
-                week_img.save(path, format='PNG')
-                path.seek(0)
-                file = types.BufferedInputFile(path.getvalue(), filename=f"week_{idx+1}.png")
-                media_list.append(types.InputMediaPhoto(
-                    media=file,
-                    caption=f"<b>📅 Вот расписание</b>\n1) Прошедшая неделя\n2) Текущая неделя\n3) Будущая неделя\nНадеюсь, помог" if responses[-1] == response else None, parse_mode="HTML"
-                ))
-                # await callback.message.answer_photo(
-                #     photo=types.BufferedInputFile(path.getvalue(), filename=f"week_{idx+1}.png"),
-                #     caption=f"📅 {week_name}\nГруппа: <b>{group_name}</b>",
-                #     parse_mode="HTML"
-                # )
-            if media_list:
-                await message.reply_media_group(media=media_list)
-            else:
-                print("unk err")
-            
-            try:
-                st_TXT = []
-                st_cfg_txt = {} #txt
-                full_week_txt = ""
-                
-                for idx, response in enumerate([response1, response2, response3]):
-                    
-                    current_week_by_dates = all_dates[idx]
+                for idx, response in enumerate(responses):
+                    if not response: continue
+                        
                     week_name, days_data = response
-                    st_cfg_txt[week_name] = {}
+                    current_week_dates = all_dates[idx] if idx < len(all_dates) else []
+
+
+                    valid_days_to_draw = []
+                    for day_idx, (day_name, lessons) in enumerate(days_data.items()):
+                        date_str = current_week_dates[day_idx] if day_idx < len(current_week_dates) else ""
+                        if req_days and date_str not in req_days:
+                            continue
+                        valid_days_to_draw.append((day_name, date_str, lessons))
+
+
+                    if not valid_days_to_draw:
+                        continue
+
+
+                    width = 1200 
+
+                    temp_img = Image.new('RGB', (width, 5000), color='#f4f7f2')
+                    draw = ImageDraw.Draw(temp_img)
                     
+                    y = 20
+                    draw.text((20, y), f"Расписание: {group_name}", fill="#2d3436", font=font_title)
+                    y += 60
+
+                    draw.rounded_rectangle([20, y, width-20, y+45], radius=8, fill=color1)
+                    draw.text((40, y+10), str(week_name), fill="white", font=font_week)
+                    y += 70
+
+                    col_x = [20, 610]
+                    col_w = 570
+                    col_y = [y, y]
                     
-                    for day_idx, (dayN, dayC) in enumerate(days_data.items()):
-                        stringTXT = """"""
-                        # if dayN == "Понедельник":
-                        #     stringHTML += "<div class='week'>"
-                        stringTXT += f"\t📆 {dayN} {current_week_by_dates[day_idx] if  day_idx < len(current_week_by_dates) else ""}\n"
-                        
-                        if not dayC:
-                            stringTXT += "\nЗанятий нет\n"
+                    for d_idx, (day_name, date_str, lessons) in enumerate(valid_days_to_draw):
+                        c_idx = d_idx % 2
+                        c_x = col_x[c_idx]
+
+                        draw.rounded_rectangle([c_x, col_y[c_idx], c_x + col_w, col_y[c_idx]+35], radius=6, fill=color3)
+                        draw.text((c_x + 20, col_y[c_idx] + 5), f"{day_name} ({date_str})", fill=color2, font=font_day)
+                        col_y[c_idx] += 45
+
+                        if not lessons:
+                            draw.text((c_x + 20, col_y[c_idx]), "Пар нет", fill="#7F8C8D", font=font_text)
+                            col_y[c_idx] += 40
                         else:
-                            for lesson in dayC:
-                                time_code = int(lesson["time_code"])
-                                time_range = codes.get(time_code, ("", ""))
+                            for lesson in lessons:
+                                t_code = int(lesson.get("time_code", 0))
+                                t_range = codes.get(t_code, ("??:??", "??:??"))
+                                time_str = f"· {t_range[0]} - {t_range[1]}"
                                 
-                                stringTXT += (
-                                    f"\n{lesson['time']}\n"
-                                    f"  {time_range[0]} - {time_range[1]}\n"
-                                    f"  {lesson['teacher']}\n"
-                                    f"  {lesson['subject']} ({lesson['room']})\n"
-                                )
-                        stringTXT += "\n"
+                                draw.text((c_x + 20, col_y[c_idx]), time_str, fill="#34495E", font=font_text)
+                                col_y[c_idx] += 25
+                                
+                                subj = f"{lesson.get('subject', '---')} ({lesson.get('room', '-')})"
+                                wrapped_subject = textwrap.wrap(subj, width=40) 
+                                for line in wrapped_subject:
+                                    draw.text((c_x + 40, col_y[c_idx]), line, fill="#2d3436", font=font_text)
+                                    col_y[c_idx] += 25
+                                
+                                teacher = f"{lesson.get('teacher', '---')}"
+                                draw.text((c_x + 40, col_y[c_idx]), teacher, fill="#7F8C8D", font=font_small)
+                                col_y[c_idx] += 25
+                                
+                                draw.line([c_x + 20, col_y[c_idx], c_x + col_w - 20, col_y[c_idx]], fill="#BDC3C7", width=1)
+                                col_y[c_idx] += 15
                         
-                        if day_idx < len(current_week_by_dates):
-                            date_key = current_week_by_dates[day_idx]
-                            st_cfg_txt[week_name][date_key] = stringTXT
+                        col_y[c_idx] += 20 
 
-                    full_week_txt += "\n" + "\n".join(st_cfg_txt[week_name].values())
-                    st_TXT.append(full_week_txt)
 
+                    final_y = max(col_y[0], col_y[1]) + 20 
+                    week_img = temp_img.crop((0, 0, width, max(final_y, 300)))
+
+                    path = io.BytesIO()
+                    week_img.save(path, format='PNG')
+                    path.seek(0)
+                    file = types.BufferedInputFile(path.getvalue(), filename=f"week_{idx+1}.png")
+                    media_list.append(types.InputMediaPhoto(
+                        media=file,
+                        caption=f"<b>📅 Вот расписание</b>\n1) Прошедшая неделя\n2) Текущая неделя\n3) Будущая неделя\nНадеюсь, помог" if responses[-1] == response else None, parse_mode="HTML"
+                    ))
+                    # await callback.message.answer_photo(
+                    #     photo=types.BufferedInputFile(path.getvalue(), filename=f"week_{idx+1}.png"),
+                    #     caption=f"📅 {week_name}\nГруппа: <b>{group_name}</b>",
+                    #     parse_mode="HTML"
+                    # )
+                if media_list:
+                    await message.reply_media_group(media=media_list)
+                else:
+                    print("unk err")
                 
-                ans2 = ai.answer_text_with_fallback(message.text, full_week_txt)
+                try:
+                    st_TXT = []
+                    st_cfg_txt = {} #txt
+                    full_week_txt = ""
+                    
+                    for idx, response in enumerate([response1, response2, response3]):
+                        
+                        current_week_by_dates = all_dates[idx]
+                        week_name, days_data = response
+                        st_cfg_txt[week_name] = {}
+                        
+                        
+                        for day_idx, (dayN, dayC) in enumerate(days_data.items()):
+                            stringTXT = """"""
+                            # if dayN == "Понедельник":
+                            #     stringHTML += "<div class='week'>"
+                            stringTXT += f"\t📆 {dayN} {current_week_by_dates[day_idx] if  day_idx < len(current_week_by_dates) else ""}\n"
+                            
+                            if not dayC:
+                                stringTXT += "\nЗанятий нет\n"
+                            else:
+                                for lesson in dayC:
+                                    time_code = int(lesson["time_code"])
+                                    time_range = codes.get(time_code, ("", ""))
+                                    
+                                    stringTXT += (
+                                        f"\n{lesson['time']}\n"
+                                        f"  {time_range[0]} - {time_range[1]}\n"
+                                        f"  {lesson['teacher']}\n"
+                                        f"  {lesson['subject']} ({lesson['room']})\n"
+                                    )
+                            stringTXT += "\n"
+                            
+                            if day_idx < len(current_week_by_dates):
+                                date_key = current_week_by_dates[day_idx]
+                                st_cfg_txt[week_name][date_key] = stringTXT
 
-                await message.reply(
-                    f"<b>🤖 AI анализ</b>:\n\n<blockquote>{ans2}</blockquote>",
-                    parse_mode="HTML"
-                )
-            except Exception as e:
-                print("idunno.py, 230")
-                print(e)
+                        full_week_txt += "\n" + "\n".join(st_cfg_txt[week_name].values())
+                        st_TXT.append(full_week_txt)
+
+                    
+                    ans2 = await asyncio.to_thread(ai.answer_text_with_fallback, message.text, full_week_txt)
+
+                    await message.reply(
+                        f"<b>🤖 AI анализ</b>:\n\n<blockquote>{str(ans2).replace('\n', '', 1) if str(ans2).startswith('\n') else str(ans2)}</blockquote>",
+                        parse_mode="HTML"
+                    )
+                except Exception as e:
+                    print("idunno.py, 230")
+                    print(e)
 
 @router.message(F.sticker)
 async def and_st(message: Message):
