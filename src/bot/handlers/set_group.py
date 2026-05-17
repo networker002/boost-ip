@@ -2,7 +2,7 @@ from aiogram import types, F, Router
 from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
-#from dotenv import load_dotenv
+# from dotenv import load_dotenv
 import os
 from services.db.user_group import check_user_group, set_user_group
 from utils import keyboards
@@ -17,7 +17,6 @@ from services import get_gr_names
 #     raise ValueError("GROUP_SECRET not set in .env")
 
 
-
 class GroupState(StatesGroup):
     wanting_crate_group = State()
     waiting_for_code = State()
@@ -27,19 +26,16 @@ class EditingGroup(StatesGroup):
     waiting_new_group = State()
 
 
-
 router = Router()
-
 
 
 @router.message(Command("group"))
 async def check_group(message: types.Message):
     check_data = await check_user_group(message.from_user.id)
-    
+
     if (check_data and check_data["group_name"] and check_data["group_name"].upper() not in ["NULL", ""]):
         keyboard_schedule = keyboards.watch_schedule_edit_group_kb()
         await message.answer(f"Ваша группа - <b>{check_data['group_name']}</b>", parse_mode="HTML", reply_markup=keyboard_schedule)
-    
 
     else:
         kb = keyboards.yes_no_group_want_kb()
@@ -57,8 +53,7 @@ async def check_group(message: types.Message):
 #     await callback.answer()
 
 
-
-@router.message(F.data == "want_add_group")
+@router.callback_query(F.data == "want_add_group")
 async def check_code(callback: types.CallbackQuery, state: FSMContext):
     
     await callback.message.reply("Введите свою группу - я вас зарегистрирую: ")
@@ -95,7 +90,6 @@ async def dont_notice_cr_group(callback: types.CallbackQuery, state: FSMContext)
     await callback.answer("Регистрация отменена")
 
 
-
 @router.callback_query(F.data == "edit_group_btn")
 async def watch_schedule_edit_by_btn(callback: types.CallbackQuery, state: FSMContext):
     if await check_user_group(tg_id=int(callback.from_user.id)) is not None:
@@ -104,7 +98,6 @@ async def watch_schedule_edit_by_btn(callback: types.CallbackQuery, state: FSMCo
         await callback.answer()
     else:
         await callback.answer("Сначала зарегистрируйте группу!", show_alert=True)
-
 
 
 @router.message(F.text, EditingGroup.waiting_new_group)
