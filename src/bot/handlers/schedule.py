@@ -76,21 +76,21 @@ async def _get_schedule_logic(message: types.Message, user_id: int, bot: Bot, we
         s_data = False
 
     res = await check_user_group(user_id)
-    if res is None or "group_name" not in res.keys() or len(res.get("group_name", "")) < 4:
+    if res is not None and len(res.get("group_name")) >= 4:
+        try:
+            group_name = res.get("group_name")
+            # response = schedule.Schedule(group_name=group_name).run_()
+            response1, response2, response3 = await schedule.Schedule(group_name=group_name).get_schedule_async(prev_next=True)
+            # print(63)
+        except Exception as e:
+            print("Schedule error:", e)
+            response1, response2, response3 = None, None, None
+    else:
         await _safe_edit_text(
             sent_message,
-            text="Сначала вы должны зарегистрировать свою группу.\nИспользуйте команду /group"
+            text="Сначала вы должны зарегистрировать свою группу.\nИспользуйте команду /group",
         )
         return
-
-    try:
-        group_name = res.get("group_name")
-        # response = schedule.Schedule(group_name=group_name).run_()
-        response1, response2, response3 = await schedule.Schedule(group_name=group_name).get_schedule_async(prev_next=True)
-        # print(63)
-    except Exception as e:
-        print("Schedule error:", e)
-        response1, response2, response3 = None, None, None
 
     # print(80)
     # print(response)
