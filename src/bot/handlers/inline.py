@@ -4,8 +4,11 @@ from hashlib import md5
 from services.db import schedule, user_group
 from pathlib import Path
 import json
+import datetime
 
 router = Router()
+
+week_days = ["Понедельник", "Вторник", "Среда", "Четверг", "Пятница", "Суббота"]
 
 days_map = {
         "пн": "Понедельник", "понедельник": "Понедельник",
@@ -14,10 +17,8 @@ days_map = {
         "чт": "Четверг", "четверг": "Четверг",
         "пт": "Пятница", "пятница": "Пятница",
         "сб": "Суббота", "суббота": "Суббота",
-        "":["Понедельник", "Вторник", "Среда", "Четверг", "Пятница", "Суббота"]
+        "": week_days
     }
-
-
 
 @router.inline_query()
 async def schedule_inline(inline_query: InlineQuery):
@@ -27,7 +28,7 @@ async def schedule_inline(inline_query: InlineQuery):
     print(result_id)
     group = await user_group.check_user_group(inline_query.from_user.id)
     group_name = group.get("group_name", "ИС-25-14О")
-    
+
     codes = {}
     counter = 0
     d2 = 0
@@ -45,7 +46,24 @@ async def schedule_inline(inline_query: InlineQuery):
 
     thumbnail_url = None
     try:
-        target_day_code = days_map[text]
+        if text == "завтра":
+            today = datetime.datetime.now().weekday()
+            if today == 6: # воскресенье
+                res = InlineQueryResultArticle(
+                    id=result_id,
+                    title="🎉 Завтра выходной!",
+                    input_message_content=InputTextMessageContent(
+                        message_text=f"Завтра нет пар.",
+                        parse_mode="HTML",
+                    ),
+                    description="В воскресенье пар нет",
+                )
+                await inline_query.answer(results=[res], cache_time=30)
+                return 
+
+            target_day_code = week_days[(today + 1) % 7]
+        else:
+            target_day_code = days_map[text]
 
     except Exception:
         result_id = md5(text.encode()).hexdigest()
@@ -59,11 +77,11 @@ async def schedule_inline(inline_query: InlineQuery):
             description="Введите корректный день недели"
         )
         await inline_query.answer(results=[res], cache_time=30)
-        
+
         return
-    
+
     try:
-        
+
         week_type, sc = await schedule.Schedule(group_name=group_name).get_schedule_async()
         if type(target_day_code) == list:
             result = sc
@@ -73,12 +91,12 @@ async def schedule_inline(inline_query: InlineQuery):
         if text in [" " * x for x in range(0, 13)] or text in ["нед", "неделя"]:
             text = "неделя" 
             for day, contents in result.items(): 
-                
+
                 if not contents:
                     continue
                 if counter == 0:
                     string += f"""\n\n<blockquote>——————————————\n📅 <b>{day}</b>"""
-                    
+
                 else:
                     string += f"""\n\n——————————————\n📅 <b>{day}</b>"""
 
@@ -86,9 +104,9 @@ async def schedule_inline(inline_query: InlineQuery):
 
                 for lesson in contents:
                     time_code = lesson["time_code"]
-                        # print(100)
+                    # print(100)
                     time_range = codes.get(int(time_code), ("", ""))
-                        # print(time_range)
+                    # print(time_range)
                     string += (
                             f"\n\n<b>{lesson['time']}</b>"
                             f" {time_range[0]} - {time_range[1]}\n"
@@ -96,17 +114,17 @@ async def schedule_inline(inline_query: InlineQuery):
                     string += f"{lesson['subject']} ({lesson['room']})"
         else:
             for lesson in result:
-                #lesson = content
+                # lesson = content
                 time_code = lesson["time_code"]
-                    # print(100)
+                # print(100)
                 time_range = codes.get(time_code, ("", ""))
-                    # print(time_range)
+                # print(time_range)
                 if d2 == 0:
                     string += (
                             f"\n\n<blockquote><b>{lesson['time']}</b>"
                             f" {time_range[0]} - {time_range[1]}\n"
                         )
-                    
+
                 else:
                     string += (
                             f"\n\n<b>{lesson['time']}</b>"
@@ -114,10 +132,10 @@ async def schedule_inline(inline_query: InlineQuery):
                         )
                 d2 += 1
                 string += f"{lesson['subject']} ({lesson["room"]})"
-        #print(week_type)
-        #print(counter, d2)
-        #print(string)
-        #print(result)
+        # print(week_type)
+        # print(counter, d2)
+        # print(string)
+        # print(result)
     except Exception as e:
         result_id = md5(text.encode()).hexdigest()
         res = InlineQueryResultArticle(
@@ -129,15 +147,15 @@ async def schedule_inline(inline_query: InlineQuery):
             ),
             description="Значит - выходной!"
         )
-        #print(week_type)
-        #print(e)
-        #print(string)
+        # print(week_type)
+        # print(e)
+        # print(string)
         await inline_query.answer(results=[res], cache_time=30)
         return
-    
-    #print(result)
+
+    # print(result)
     result_id = md5(text.encode()).hexdigest()
-            
+
     if result is None:
         description_text = "Расписание на этот день не найдено"
         content_text = f"<b>{text}</b>\n\nНет данных."
@@ -157,6 +175,5 @@ async def schedule_inline(inline_query: InlineQuery):
         description=description_text,
         thumbnail_url=thumbnail_url
     )
-    
+
     await inline_query.answer(results=[res], cache_time=60)
-    
