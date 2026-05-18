@@ -40,7 +40,7 @@ def parse_ai_response(response) -> bool:
     return "YES" in res or "ДА" in res
 
 
-def answer_text(ctx:str, model:str = os.environ.get("AI_MODEL")) -> bool | None:
+def answer_text(ctx:str, data:str, model:str=os.environ.get("AI_MODEL")) -> bool | None:
     try:
         now_msk = datetime.now(timezone(timedelta(hours=3)))
         ctx = ctx.strip()[:30]
