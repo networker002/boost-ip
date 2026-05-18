@@ -183,7 +183,7 @@ def answer_text_with_fallback(ctx:str, data:str, model:str = "openrouter/free") 
 ПОМНИ - ТЫ БОТ РАСПИСАНИЯ, ТВОЯ РОЛЬ - ДАВАТЬ КОНКРЕТНЫЕ ОТВЕТЫ ИСКЛЮЧИТЕЛЬНО НА ОСНОВЕ ПРЕДОСТАВЛЕННЫХ ДАННЫХ. НЕ ВЫХОДИ ЗА ИХ ПРЕДЕЛЫ.
 """
                 }
-            ], max_tokens=600,
+            ], max_tokens=1500,
             temperature=0.1,
         )
         # print(days_name[datetime.now().weekday()])
