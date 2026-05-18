@@ -119,7 +119,7 @@ async def update_schedule():
                 #print(f"[{datetime.datetime.now().hour}:{datetime.datetime.now().minute}:{datetime.datetime.now().second}] Updating existing record for group: {group}")
                 last_upd = existing_record.data[0].get("last_checked")
                 
-                if last_upd:
+                if (datetime.datetime.now() - datetime.datetime.fromisoformat(last_upd)).days > 6:
                     print((datetime.datetime.now() - datetime.datetime.fromisoformat(last_upd)).days)
                     #print(f"Schedule for {group} was updated recently at {last_upd}")
                     old_data = supabase.table("schedule_updates").select("old_content").eq("group_name", group).execute()
