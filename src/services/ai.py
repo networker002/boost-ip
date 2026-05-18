@@ -134,7 +134,7 @@ def answer_text(ctx:str, model:str = None) -> bool | None:
 
 days_name = {0:"Понедельник", 1:"Вторник", 2:"Среда", 3:"Четверг", 4:"Пятница", 5:"Суббота", 6:"Воскресенье"}
 
-def answer_text_with_fallback(ctx:str, data:str, model:str = "google/gemini-3.1-flash-lite") -> bool | None:
+def answer_text_with_fallback(ctx:str, data:str, model:str = "meta-llama/llama-3.1-8b-instruct") -> bool | None:
     try:
         response = client.chat.completions.create(
             model=model,
