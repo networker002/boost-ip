@@ -8,7 +8,7 @@ from aiogram.client.session.aiohttp import AiohttpSession
 from aiogram.client.telegram import TelegramAPIServer
 import aiohttp
 from bot.handlers import start, show_c, conv, schedule, set_group, profile, inline, idunno, group_admin, pinunpin, notice
-from utils.anti_flood import AntiFloodMiddleware
+# from utils.anti_flood import AntiFloodMiddleware
 import hmac
 import time
 from hashlib import sha256
