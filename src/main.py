@@ -88,7 +88,7 @@ async def lifespan(app: fastapi.FastAPI):
     else:
         bot = Bot(token=BOT_TOKEN)
 
-    dp.update.outer_middleware(AntiFloodMiddleware())
+    # dp.update.outer_middleware(AntiFloodMiddleware())
 
     await bot.set_webhook(
         url=f"{WEBHOOK_HOST}{WEBHOOK_PATH}",
