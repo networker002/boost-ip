@@ -316,6 +316,10 @@ async def idunno(message: Message, bot: Bot):
                     
                     ans2 = await asyncio.to_thread(ai.answer_text, message.text, full_week_txt)
 
+                    if ans2 is None or str(ans2) == "None":
+                        print("Prevented AI intervention! See AI provider logs for more info.")
+                        return
+
                     await message.reply(
                         f"<b>🤖 AI анализ</b>:\n\n<blockquote>{str(ans2).replace('\n', '', 1) if str(ans2).startswith('\n') else str(ans2)}</blockquote>",
                         parse_mode="HTML"
