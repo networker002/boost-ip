@@ -10,8 +10,7 @@ load_dotenv()
 
 
 try:
-    api_key1 = os.getenv("AI_TOKEN")
-    api_key2 = os.getenv("AI_TOKEN2")
+    api_key = os.getenv("AI_TOKEN")
 except EnvironmentError as e:
     print(e)
     pass
@@ -26,11 +25,7 @@ except Exception as e:
 def create_client() -> OpenAI:
     client = OpenAI(
         base_url="https://openrouter.ai/api/v1",
-        api_key=rnd.choice([api_key1, api_key2]),
-        max_retries=3,
-        default_headers={
-            "User-Agent": rnd.choice(UA)
-            }
+        api_key=api_key
     )
 
     return client
