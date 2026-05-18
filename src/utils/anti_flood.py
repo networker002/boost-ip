@@ -3,8 +3,8 @@ from aiogram.fsm.middleware import BaseMiddleware
 import time
 
 class AntiFloodMiddleware(BaseMiddleware):
-    def __init__(self, default_rate: float = 1.0):
-        self.rate_limit = default_rate
+    def __init__(self, rate: float = 0.5):
+        self.rate_limit = rate
         self.last_request = {}
 
     async def __call__(
@@ -13,6 +13,8 @@ class AntiFloodMiddleware(BaseMiddleware):
         event: Update,
         data: dict
     ):
+        if event.message and isinstance(event.message, Message) and event.message.chat.type != "private":
+            return await handler(event, data)
         user_id = None
 
         if event.message and isinstance(event.message, Message):
