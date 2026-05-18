@@ -314,7 +314,7 @@ async def idunno(message: Message, bot: Bot):
                         st_TXT.append(full_week_txt)
 
                     
-                    ans2 = await asyncio.to_thread(ai.answer_text_with_fallback, message.text, full_week_txt)
+                    ans2 = await asyncio.to_thread(ai.answer_text, message.text, full_week_txt)
 
                     await message.reply(
                         f"<b>🤖 AI анализ</b>:\n\n<blockquote>{str(ans2).replace('\n', '', 1) if str(ans2).startswith('\n') else str(ans2)}</blockquote>",
