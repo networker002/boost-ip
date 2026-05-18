@@ -15,20 +15,11 @@ except EnvironmentError as e:
     print(e)
     pass
 
-try:
-    with open(Path(__file__).parent.parent.parent / "config" / "useragents.txt", "r") as f:
-        UA = f.read().split("\n")
 
-except Exception as e:
-    print("UA file error\n", e)
-
-def create_client() -> OpenAI:
-    client = OpenAI(
-        base_url="https://openrouter.ai/api/v1",
+client = OpenAI(base_url="https://openrouter.ai/api/v1",
         api_key=api_key
     )
 
-    return client
 
 
 model1 = "arcee-ai/trinity-large-preview:free"#WORKS 1.8789713382720947-10s
@@ -96,7 +87,7 @@ def answer_text(ctx:str, model:str = None) -> bool | None:
     try:
         model = model if model else "openrouter/free"
 
-        response = create_client().chat.completions.create(
+        response = client.chat.completions.create(
             model=model,
             messages=[
                 
@@ -145,7 +136,7 @@ days_name = {0:"Понедельник", 1:"Вторник", 2:"Среда", 3:"
 
 def answer_text_with_fallback(ctx:str, data:str, model:str = "openrouter/free") -> bool | None:
     try:
-        response = create_client().chat.completions.create(
+        response = client.chat.completions.create(
             model=model,
             messages=[
                 {
@@ -192,7 +183,7 @@ def answer_text_with_fallback(ctx:str, data:str, model:str = "openrouter/free") 
 ПОМНИ - ТЫ БОТ РАСПИСАНИЯ, ТВОЯ РОЛЬ - ДАВАТЬ КОНКРЕТНЫЕ ОТВЕТЫ ИСКЛЮЧИТЕЛЬНО НА ОСНОВЕ ПРЕДОСТАВЛЕННЫХ ДАННЫХ. НЕ ВЫХОДИ ЗА ИХ ПРЕДЕЛЫ.
 """
                 }
-            ], max_tokens=400,
+            ], max_tokens=600,
             temperature=0.1,
         )
         # print(days_name[datetime.now().weekday()])
